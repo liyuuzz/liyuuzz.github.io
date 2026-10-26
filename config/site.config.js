@@ -1,0 +1,43 @@
+export const siteConfig = {
+  owner: "LiYuuzz",
+  role: "Creative Developer",
+  intro: "一名探索技术与创意的大学生。保持好奇，持续学习，把想法一点点变成现实。",
+  navigation: [
+    { label: "首页", href: "#home" },
+    { label: "关于", href: "#about" },
+    { label: "作品", href: "#projects" },
+    { label: "联系", href: "#contact" },
+  ],
+  projects: [
+    {
+      index: "01",
+      type: "WEB EXPERIENCE",
+      title: "沉浸式个人空间",
+      description: "以 3D 视觉与动态交互组织个人信息，让作品展示变成一次空间探索。",
+      tags: ["Three-dimensional", "Interaction", "Responsive"],
+      link: "#home",
+      linkLabel: "查看实验",
+      theme: "lime",
+    },
+    {
+      index: "02",
+      type: "CREATIVE CODING",
+      title: "生成式视觉实验",
+      description: "将几何、运动和代码结合，构建持续变化且具有节奏感的数字图形。",
+      tags: ["Generative", "Motion", "Canvas"],
+      link: "#projects",
+      linkLabel: "了解更多",
+      theme: "cyan",
+    },
+    {
+      index: "03",
+      type: "DIGITAL PRODUCT",
+      title: "校园效率工具",
+      description: "从真实需求出发，把重复流程转化为清晰、轻量且易用的工具体验。",
+      tags: ["Product", "Utility", "Prototype"],
+      link: "#contact",
+      linkLabel: "交流想法",
+      theme: "violet",
+    },
+  ],
+};
