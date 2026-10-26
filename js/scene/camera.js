@@ -7,8 +7,8 @@
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
-const easeInOutQuart = (t) =>
-  t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+const easeInOutQuint = (t) =>
+  t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
 
 export function createCameraRig({ worldEl, rotEl, positions = [], reducedMotion = false }) {
   const cam = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, speed: 0 };
@@ -50,9 +50,9 @@ export function createCameraRig({ worldEl, rotEl, positions = [], reducedMotion 
 
     // 跳转步数越多，运镜越长、侧倾越明显
     const steps = Math.abs(next - index);
-    const dx = layout[next].x - layout[index].x;
-    const bankBase = clamp((dx / 160) * 4.5, -9, 9);
-    const bank = bankBase !== 0 ? bankBase : (next > index ? 1 : -1) * Math.min(5, 2.2 + steps);
+    const dir = next > index ? 1 : -1;
+    // 侧倾不依赖模块横向偏移（偏移很小），改用方向 + 步数，保证每次推进都有明确的"倾倒"感
+    const bank = dir * Math.min(7.5, 3.2 + steps * 1.4);
 
     tween = {
       fromZ,
@@ -60,7 +60,8 @@ export function createCameraRig({ worldEl, rotEl, positions = [], reducedMotion 
       start: performance.now(),
       dur: clamp(1250 + steps * 240, 1100, 2600),
       bank,
-      pitch: next > index ? 1.6 : -1.2,
+      dir,
+      pitch: dir * (1.9 + Math.min(1.1, steps * 0.35)),
     };
 
     notifyChange(next);
@@ -104,8 +105,9 @@ export function createCameraRig({ worldEl, rotEl, positions = [], reducedMotion 
       cam.ry = tween.bank * hump;
       cam.rz = -tween.bank * hump * 0.42;
       cam.rx = tween.pitch * hump;
-      cam.x = pointer.x * 26 * (1 - hump);
-      cam.y = pointer.y * 16 * (1 - hump) - 18 * hump;
+      // 推进时摄像机略微横向偏移再回正：与模块产生真实视差，而不是原地缩放
+      cam.x = pointer.x * 26 * (1 - hump) - tween.dir * 46 * hump;
+      cam.y = pointer.y * 16 * (1 - hump) - 26 * hump;
 
       if (p >= 1) {
         cam.ry = 0;

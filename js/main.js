@@ -5,11 +5,11 @@ import { renderProjects } from "./components/projects.js";
 import { renderContact } from "./components/contact.js";
 import { createCameraRig } from "./scene/camera.js";
 import { createBackdrop } from "./scene/backdrop.js";
+import { createHelix } from "./scene/helix.js";
 import { createEyeGate } from "./scene/eyeGate.js";
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
-/* 模块注册表：新增一个区块只需在这里挂渲染函数 */
 const RENDERERS = {
   home: renderHero,
   about: renderAbout,
@@ -17,7 +17,7 @@ const RENDERERS = {
   contact: renderContact,
 };
 
-/* 各模块在空间中的姿态：轻微俯仰与转角，让版面明确地"斜着浮在空间里" */
+/* 各模块在空间中的姿态：轻微俯仰与转角，让版面明确"斜着浮在空间里" */
 const OFFSETS = [
   { x: 0, y: 0, ry: -8, rx: 2.2 },
   { x: -34, y: 20, ry: 10, rx: -2.2 },
@@ -29,8 +29,7 @@ const el = {
   world: document.getElementById("world"),
   rot: document.getElementById("worldRot"),
   field: document.getElementById("field"),
-  rail: document.getElementById("rail"),
-  spot: document.getElementById("railSpot"),
+  helix: document.getElementById("helix"),
   depth: document.getElementById("depth"),
   vel: document.getElementById("vel"),
   counter: document.getElementById("counter"),
@@ -60,7 +59,6 @@ const items = siteConfig.modules.map((module) => {
   return { el: section, cache: { opacity: -1, blur: -1, visibility: "" } };
 });
 
-// 遥测面板在入口模块内部，必须等模块注入 DOM 之后再取
 Object.assign(el, {
   tele: document.getElementById("tele"),
   teleV: document.getElementById("teleV"),
@@ -71,11 +69,11 @@ Object.assign(el, {
 /* ---------- 空间布局 ---------- */
 let positions = [];
 let totalDepth = 1;
-let railSpan = 0;
+let spacing = 1560;
 
 function computeLayout() {
   const narrow = window.innerWidth <= 980;
-  const spacing = narrow ? 1080 : 1560;
+  spacing = narrow ? 1080 : 1560;
 
   positions = items.map((_, i) => {
     const o = OFFSETS[i % OFFSETS.length];
@@ -96,8 +94,6 @@ function computeLayout() {
       `translate(-50%, -50%) translate3d(${p.x}px, ${p.y}px, ${p.z}px) ` +
       `rotateY(${p.rotY}deg) rotateX(${p.rotX}deg)`;
   });
-
-  railSpan = Math.max(0, el.rail.clientHeight - 26);
 }
 
 computeLayout();
@@ -110,32 +106,22 @@ const rig = createCameraRig({
   reducedMotion,
 });
 
-/* ---------- 环境与彩蛋 ---------- */
+/* ---------- 环境 / 螺旋 / 彩蛋 ---------- */
 const backdrop = createBackdrop(el.field);
+const helix = createHelix(el.helix, {
+  modules: siteConfig.modules,
+  onSelect: (index) => rig.goTo(index),
+});
 const eyeGate = createEyeGate(el.gate);
 
-/* ---------- 导航 ---------- */
-siteConfig.modules.forEach((module, i) => {
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "rail-item";
-  btn.innerHTML =
-    `<span class="rail-item__label">${module.label}</span>` +
-    `<span class="rail-item__num">${String(i + 1).padStart(2, "0")}</span>`;
-  btn.setAttribute("aria-label", `前往${module.label}`);
-  btn.addEventListener("click", () => rig.goTo(i));
-  el.rail.appendChild(btn);
-});
-
-const railButtons = [...el.rail.querySelectorAll(".rail-item")];
-
-/* ---------- 遥测：把摄像机的运动画成信号 ---------- */
+/* ---------- 遥测 ---------- */
 const teleCtx = el.tele ? el.tele.getContext("2d") : null;
 const TELE_W = el.tele ? el.tele.width : 0;
 const TELE_H = el.tele ? el.tele.height : 0;
 const TELE_N = 150;
 const teleBuf = new Array(TELE_N).fill(0);
-let teleTimer = 0;
+let teleAcc = 0;
+let accentColor = siteConfig.modules[0].color;
 
 function drawTelemetry() {
   if (!teleCtx) return;
@@ -143,7 +129,7 @@ function drawTelemetry() {
 
   teleCtx.clearRect(0, 0, TELE_W, TELE_H);
 
-  teleCtx.strokeStyle = "rgba(237, 239, 241, 0.1)";
+  teleCtx.strokeStyle = "rgba(237, 239, 241, 0.12)";
   teleCtx.lineWidth = 1;
   teleCtx.beginPath();
   teleCtx.moveTo(0, baseY);
@@ -158,7 +144,6 @@ function drawTelemetry() {
     teleCtx.stroke();
   }
 
-  // 曲线下方的余辉，让这块读数在静止时也有存在感
   teleCtx.beginPath();
   teleCtx.moveTo(0, baseY);
   for (let i = 0; i < TELE_N; i += 1) {
@@ -168,9 +153,15 @@ function drawTelemetry() {
   }
   teleCtx.lineTo(TELE_W, baseY);
   teleCtx.closePath();
+
+  const rgb = accentColor.replace("#", "");
+  const r = parseInt(rgb.slice(0, 2), 16);
+  const g = parseInt(rgb.slice(2, 4), 16);
+  const b = parseInt(rgb.slice(4, 6), 16);
+
   const fill = teleCtx.createLinearGradient(0, baseY - TELE_H * 0.5, 0, baseY);
-  fill.addColorStop(0, "rgba(255, 68, 51, 0.26)");
-  fill.addColorStop(1, "rgba(255, 68, 51, 0)");
+  fill.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.3)`);
+  fill.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
   teleCtx.fillStyle = fill;
   teleCtx.fill();
 
@@ -181,18 +172,18 @@ function drawTelemetry() {
     if (i === 0) teleCtx.moveTo(x, y);
     else teleCtx.lineTo(x, y);
   }
-  teleCtx.strokeStyle = "#ff4433";
+  teleCtx.strokeStyle = accentColor;
   teleCtx.lineWidth = 1.9;
   teleCtx.stroke();
 
   const ly = baseY - teleBuf[TELE_N - 1] * TELE_H * 0.56;
-  teleCtx.fillStyle = "#ff4433";
+  teleCtx.fillStyle = accentColor;
   teleCtx.beginPath();
   teleCtx.arc(TELE_W - 3, ly, 3.4, 0, Math.PI * 2);
   teleCtx.fill();
 }
 
-/* ---------- 景深 ---------- */
+/* ---------- 模块景深 ---------- */
 function updateModules(camZ) {
   for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
@@ -203,8 +194,6 @@ function updateModules(camZ) {
     let opacity = 0;
     let blur = 0;
 
-    // 纯排印版面没有面板遮挡，远处模块必须快速淡出，
-    // 否则上一/下一模块的标题会透过当前版面形成重影
     if (relZ <= 260) {
       if (depth <= 140) opacity = 1;
       else opacity = clamp(1 - (depth - 140) / 620, 0, 1);
@@ -238,11 +227,11 @@ function updateModules(camZ) {
 
 /* ---------- 每帧 ---------- */
 let hudTimer = 0;
-let teleAcc = 0;
 
 rig.onFrame((state, dt) => {
   updateModules(state.camZ);
   backdrop.render(state, dt);
+  helix.render({ camZ: state.camZ, index: state.index, spacing }, dt);
 
   teleBuf.push(clamp(Math.sqrt(clamp(state.speed / 1500, 0, 1)), 0, 1) * 0.85);
   teleBuf.shift();
@@ -262,19 +251,27 @@ rig.onFrame((state, dt) => {
     el.vel.textContent = vel;
     if (el.teleV) el.teleV.textContent = vel;
     if (el.teleD) el.teleD.textContent = String(depthM).padStart(4, "0");
-    if (el.teleP) el.teleP.textContent = `${Math.abs(state.camZ ? rig.state.rz : 0).toFixed(1)}°`;
+    if (el.teleP) el.teleP.textContent = `${Math.abs(rig.state.rz).toFixed(1)}°`;
 
     const progress = clamp(state.camZ / totalDepth, 0, 1);
-    if (el.spot) el.spot.style.transform = `translateY(${progress * railSpan}px)`;
     if (el.mark) el.mark.style.left = `${progress * 100}%`;
   }
 });
 
+/* ---------- 模块切换：换色温、换编号、换地址 ---------- */
+function applyAccent(index) {
+  const module = siteConfig.modules[index];
+  if (!module) return;
+  accentColor = module.color;
+
+  const hex = module.color.replace("#", "");
+  const rgb = [0, 2, 4].map((o) => parseInt(hex.slice(o, o + 2), 16)).join(", ");
+  document.documentElement.style.setProperty("--accent", module.color);
+  document.documentElement.style.setProperty("--accent-rgb", rgb);
+}
+
 rig.onChange((index) => {
-  railButtons.forEach((btn, i) => {
-    if (i === index) btn.setAttribute("aria-current", "true");
-    else btn.removeAttribute("aria-current");
-  });
+  applyAccent(index);
 
   el.counter.textContent = `${String(index + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
 
@@ -284,7 +281,7 @@ rig.onChange((index) => {
   }
 });
 
-/* ---------- 进入联系模块时的彩蛋 ---------- */
+/* ---------- 进入联系模块时的彩蛋（每次打开只一次） ---------- */
 const CONTACT_INDEX = siteConfig.modules.findIndex((m) => m.id === "contact");
 let lastIndex = -1;
 
@@ -317,7 +314,7 @@ window.addEventListener(
 
     const now = performance.now();
     if (now < wheelLock) return;
-    wheelLock = now + 720;
+    wheelLock = now + 620;
 
     if (delta > 0) rig.next();
     else rig.prev();
@@ -416,6 +413,7 @@ window.addEventListener("resize", () => {
     computeLayout();
     rig.setLayout(positions);
     backdrop.resize();
+    helix.resize();
   }, 160);
 });
 

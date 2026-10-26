@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="LiYuuzz 的个人空间：一个由场线与排印构成的观测仪器，记录技术学习、创意实验与作品。" />
+    <meta name="description" content="LiYuuzz 的数字基因实验室：由粒子双螺旋导航的 3D 个人空间。" />
     <meta name="theme-color" content="#060708" />
-    <title>LiYuuzz · Field Instrument</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23060708'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23edeff1' stroke-width='1.6'/%3E%3Ccircle cx='32' cy='32' r='2.6' fill='%23ff4433'/%3E%3C/svg%3E" />
+    <title>LiYuuzz · EIVETHEORY</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23060708'/%3E%3Ccircle cx='24' cy='32' r='6' fill='%234fd8e8'/%3E%3Ccircle cx='40' cy='32' r='6' fill='%23ff6b5e'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./css/main.css" />
   </head>
   <body>
@@ -21,24 +21,27 @@
         </div>
       </div>
 
+      <div class="tint" id="tint" aria-hidden="true"></div>
       <div class="wash" aria-hidden="true"></div>
       <div class="grain" aria-hidden="true"></div>
     </main>
 
+    <!-- DNA 双螺旋目录：粒子构成的主链 + 四个功能碱基节点 -->
+    <aside class="helix" aria-label="DNA 目录导航">
+      <canvas id="helix"></canvas>
+      <span class="helix__caption">SEQUENCE · 04</span>
+    </aside>
+
     <header class="hud hud--top">
       <a class="brand" href="#home" data-nav="0">
         <span class="brand__name">LIYUUZZ</span>
-        <span class="brand__role">CREATIVE&nbsp;DEVELOPER</span>
+        <span class="brand__role">EIVETHEORY&nbsp;LAB</span>
       </a>
       <div class="readout">
         <span class="readout__item"><i>DEPTH</i><b id="depth">0000</b></span>
         <span class="readout__item"><i>VEL</i><b id="vel">0.00</b></span>
       </div>
     </header>
-
-    <nav class="hud hud--rail" id="rail" aria-label="空间模块导航">
-      <span class="rail__spot" id="railSpot" aria-hidden="true"></span>
-    </nav>
 
     <footer class="hud hud--bottom">
       <p class="hint" id="hint"><span class="hint__k">滚轮 / 滑动</span>穿越空间</p>
@@ -54,49 +57,7 @@
     <div class="gate" id="eyeGate" aria-hidden="true">
       <div class="gate__black"></div>
       <div class="gate__stage">
-        <span class="gate__halo"></span>
-        <svg class="gate__svg" viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <clipPath id="eyeLid">
-              <path d="M36 120 Q200 14 364 120 Q200 226 36 120 Z" />
-            </clipPath>
-            <radialGradient id="eyeSclera" cx="0.5" cy="0.44" r="0.62">
-              <stop offset="0" stop-color="#3a0910" />
-              <stop offset="0.7" stop-color="#170206" />
-              <stop offset="1" stop-color="#080003" />
-            </radialGradient>
-            <radialGradient id="eyeIris" cx="0.4" cy="0.36" r="0.66">
-              <stop offset="0" stop-color="#ff9c86" />
-              <stop offset="0.26" stop-color="#ff4433" />
-              <stop offset="0.62" stop-color="#b3111c" />
-              <stop offset="1" stop-color="#3d0308" />
-            </radialGradient>
-            <radialGradient id="eyeRim" cx="0.5" cy="0.5" r="0.5">
-              <stop offset="0.7" stop-color="#ff5a44" stop-opacity="0" />
-              <stop offset="0.9" stop-color="#ff7a5c" stop-opacity="0.9" />
-              <stop offset="1" stop-color="#ff4433" stop-opacity="0" />
-            </radialGradient>
-          </defs>
-
-          <g clip-path="url(#eyeLid)">
-            <rect x="0" y="0" width="400" height="240" fill="url(#eyeSclera)" />
-            <g class="eye__ball">
-              <circle cx="200" cy="120" r="57" fill="url(#eyeIris)" />
-              <circle cx="200" cy="120" r="57" fill="url(#eyeRim)" />
-              <circle cx="200" cy="120" r="22" fill="#07000a" />
-              <circle cx="181" cy="101" r="9" fill="#fff" opacity="0.72" />
-              <circle cx="215" cy="136" r="4.5" fill="#ffd8cc" opacity="0.5" />
-            </g>
-          </g>
-
-          <path
-            class="gate__rim"
-            d="M36 120 Q200 14 364 120 Q200 226 36 120 Z"
-            fill="none"
-            stroke="rgba(255,68,51,0.55)"
-            stroke-width="1.6"
-          />
-        </svg>
+        <canvas id="eyeCanvas"></canvas>
         <span class="gate__hint">CLICK TO SKIP</span>
       </div>
     </div>

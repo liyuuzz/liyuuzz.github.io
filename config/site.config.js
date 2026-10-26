@@ -11,11 +11,12 @@ export const siteConfig = {
   github: "https://github.com/liyuuzz",
 
   // 空间里依次排列的模块，顺序即摄像机推进顺序
+  // 每个模块同时是 DNA 上的一个"功能碱基"：A↔T、C↔G 互补成对
   modules: [
-    { id: "home", label: "入口", en: "ENTRY" },
-    { id: "about", label: "关于", en: "PROFILE" },
-    { id: "projects", label: "作品", en: "WORKS" },
-    { id: "contact", label: "联系", en: "CONTACT" },
+    { id: "home", label: "入口", en: "ENTRY", base: "A", baseName: "腺嘌呤", color: "#4fd8e8" },
+    { id: "about", label: "关于", en: "PROFILE", base: "T", baseName: "胸腺嘧啶", color: "#f2b25c" },
+    { id: "projects", label: "作品", en: "WORKS", base: "C", baseName: "胞嘧啶", color: "#9b8cff" },
+    { id: "contact", label: "联系", en: "CONTACT", base: "G", baseName: "鸟嘌呤", color: "#ff6b5e" },
   ],
 
   hero: {
