@@ -1,25 +1,33 @@
-import { siteConfig } from "../../config/site.config.js";
+/** 模块 03 · 作品：以列表呈现，避免卡片化的堆叠感 */
+export function renderProjects(cfg) {
+  const projects = cfg.projects;
 
-export function renderProjects() {
   return `
-    <div class="section-heading section-heading--row">
-      <div><p class="eyebrow">SELECTED WORKS</p><h2 id="projects-title">实验与作品</h2></div>
-      <p>每个项目都是一次新的探索。<br />从问题出发，用设计与代码寻找答案。</p>
-    </div>
-    <div class="project-grid">
-      ${siteConfig.projects.map((project) => `
-        <a class="project-card project-card--${project.theme}" href="${project.link}">
-          <div class="project-card__visual">
-            <div class="mini-scene"><i></i><i></i><i></i></div>
-            <span>${project.index}</span>
-          </div>
-          <div class="project-card__body">
-            <p>${project.type}</p>
-            <h3>${project.title}</h3>
-            <div class="project-card__footer"><span>${project.description}</span><b>↗</b></div>
-          </div>
-        </a>
-      `).join("")}
+    <div class="plate">
+      <header class="plate__head">
+        <span class="plate__id">03</span>
+        <span class="plate__label">Works</span>
+        <span class="plate__rule"></span>
+      </header>
+
+      <h2 class="plate__title">精选实验与作品</h2>
+
+      <ol class="works">
+        ${projects
+          .map(
+            (p) => `
+          <li class="work">
+            <span class="work__id">${p.index}</span>
+            <div>
+              <h3 class="work__title">${p.title}</h3>
+              <p class="work__desc">${p.description}</p>
+              <span class="work__tags">${p.tags.join(" / ")}</span>
+            </div>
+            <a class="work__link" href="${p.link}" target="_blank" rel="noreferrer">${p.linkLabel} ↗</a>
+          </li>`
+          )
+          .join("")}
+      </ol>
     </div>
   `;
 }

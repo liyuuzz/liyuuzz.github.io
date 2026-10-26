@@ -1,28 +1,43 @@
-export function renderHero() {
+/** 模块 01 · 入口：标语 + 实时遥测（摄像机的运动被读成信号） */
+export function renderHero(cfg) {
+  const hero = cfg.hero;
   return `
-    <div class="hero__copy">
-      <p class="eyebrow">PORTFOLIO / 2026</p>
-      <h1 id="hero-title">把想法，做成<br /><span>可体验的作品。</span></h1>
-      <p class="hero__description">你好，我是 LiYuuzz。一名探索技术与创意的大学生，<br />用代码记录学习，也用设计让想法发生。</p>
-      <div class="hero__actions">
-        <a class="button button--primary" href="#projects">探索作品<span aria-hidden="true">↗</span></a>
-        <a class="button button--ghost" href="#contact">与我联系</a>
+    <div class="plate">
+      <header class="plate__head">
+        <span class="plate__id">01</span>
+        <span class="plate__label">Entry</span>
+        <span class="plate__rule"></span>
+      </header>
+
+      <div class="entry-grid">
+        <div>
+          <h1 class="plate__title">
+            ${hero.title.map((line) => `<span>${line}</span>`).join("")}
+          </h1>
+          <p class="plate__body">${hero.description}</p>
+          <div class="plate__actions">
+            <button class="act" type="button" data-action="next">
+              <span class="act__dot"></span>
+              <span class="act__label">${hero.primary}</span>
+              <span class="act__arrow">→</span>
+            </button>
+            <button class="act act--ghost" type="button" data-goto="3">
+              <span class="act__dot"></span>
+              <span class="act__label">${hero.secondary}</span>
+              <span class="act__arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <aside class="tele" aria-hidden="true">
+          <div class="tele__screen"><canvas id="tele" width="680" height="280"></canvas></div>
+          <div class="tele__meta">
+            <span><i>Velocity</i><b id="teleV">0.00</b></span>
+            <span><i>Depth</i><b id="teleD">0000</b></span>
+            <span><i>Roll</i><b id="teleP">0.0°</b></span>
+          </div>
+        </aside>
       </div>
-      <div class="hero__meta"><span>CODE</span><span>DESIGN</span><span>EXPERIMENT</span></div>
-    </div>
-    <div class="hero__visual" aria-label="可随指针旋转的三维科技核心">
-      <div class="scene-grid"></div>
-      <div class="orbit orbit--outer"></div>
-      <div class="orbit orbit--inner"></div>
-      <div class="cube">
-        <div class="cube__face cube__face--front"></div>
-        <div class="cube__face cube__face--back"></div>
-        <div class="cube__face cube__face--right"></div>
-        <div class="cube__face cube__face--left"></div>
-        <div class="cube__face cube__face--top"></div>
-        <div class="cube__face cube__face--bottom"></div>
-      </div>
-      <span class="scene-label">INTERACTIVE CORE / 01</span>
     </div>
   `;
 }
