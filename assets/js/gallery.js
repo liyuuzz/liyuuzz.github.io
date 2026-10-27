@@ -8,9 +8,12 @@
    in-plane axes give the edges — so a plate near the viewer is larger and a
    plate at the far side is smaller, and the whole ring sorts back to front.
 
-   It drifts on its own and picks up speed under the pointer. The band is
-   masked at its edges in CSS, so the ribbon dissolves into the page instead
-   of sitting in a rectangle.
+   Each plate is stamped with one ray of the mark: twelve plates, twelve rays,
+   and on the seventh the single dot that walked out of the gap. That is what
+   the ring is for — it is the logo, unfolded, so the object on the way to the
+   works is the same object as the one at the top of the page.
+
+   It drifts on its own, picks up speed under the pointer, and can be thrown.
    ========================================================================== */
 (function () {
   'use strict';
@@ -34,7 +37,11 @@
   var CORNER = 0.19;       /* corner radius, as a fraction of the side      */
   var PHASE = 93;          /* which plate starts where                      */
   var DUR = 15;            /* seconds per revolution at rate 1              */
-  var IDLE = 0.42, HOT = 1.0;
+  var IDLE = 0.78, HOT = 2.4;
+  var TRAY = 1.10;         /* the plate the ribbons sit on, in ring radii   */
+  var GAP = 0.020;         /* how much of the band is left empty, as a
+                              fraction of its short side — this is the number
+                              that used to be a clip                          */
 
   /* twelve plates. The range is deliberately wide — it is what makes the
      ribbon read as twelve different surfaces instead of one violet bead chain */
@@ -81,7 +88,6 @@
   function mixRGB(a, b, t) {
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   }
-  function cssRGB(c) { return 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')'; }
 
   function mkc(w, h) {
     var c = document.createElement('canvas');
@@ -120,6 +126,45 @@
     x.closePath();
   }
 
+  /* ---- one ray of the mark, stamped on a plate ------------------------- */
+  /* The dot grid is what the rest of the site is made of, so the ray is drawn
+     the same way: a line of dots, not a stroke. */
+  function stampRay(x, base, i) {
+    var lum = (0.2126 * base[0] + 0.7152 * base[1] + 0.0722 * base[2]) / 255;
+    /* white dots disappear on the pale plates; invert against the surface */
+    var ink = lum > 0.55 ? '18,10,34' : '237,233,248';
+    var a = (i * 30 - 90) * Math.PI / 180;
+    var cx = TS / 2, cy = TS / 2;
+    var dx = Math.cos(a), dy = Math.sin(a);
+
+    function dot(px, py, r, al) {
+      x.beginPath();
+      x.arc(px, py, r, 0, TAU);
+      x.fillStyle = 'rgba(' + ink + ',' + al + ')';
+      x.fill();
+    }
+
+    if (i === 7) {
+      /* the one that left: a single point, out past where the ray would end */
+      dot(cx + dx * TS * 0.36, cy + dy * TS * 0.36, TS * 0.030, 0.95);
+      dot(cx + dx * TS * 0.36, cy + dy * TS * 0.36, TS * 0.072, 0.13);
+      return;
+    }
+
+    /* The ray runs off the plate. That is the point: each plate is holding one
+       arm of the mark, cut off by the edge of the panel it landed on. */
+    var half = TS / 2;
+    var r0 = half * 0.17, r1 = half * 1.02, n = 7;
+    for (var k = 0; k <= n; k++) {
+      var t = k / n;
+      var r = r0 + (r1 - r0) * t;
+      /* thicker at the hub, thinner at the tip — the mark's rays are not
+         uniform, and even dots read as a dashed line */
+      var rad = half * (0.050 - 0.020 * t);
+      dot(cx + dx * r, cy + dy * r, rad, 0.40 + 0.46 * (1 - t * 0.55));
+    }
+  }
+
   /* ---- one plate ------------------------------------------------------- */
   function paintPlate(x, base, i) {
     var n = noiseField(0x2C41 + i * 9176);
@@ -147,6 +192,7 @@
     x.drawImage(buf, 0, 0, TS, TS);
 
     grain(x, 0.10);
+    stampRay(x, base, i);
 
     /* a lit top edge — a flat plate under one light source */
     var g = x.createLinearGradient(0, 0, 0, TS);
@@ -197,9 +243,59 @@
     U[0] * V[1] - U[1] * V[0]
   ];
 
+  /* ---- the quad, before the viewport scale ----------------------------- */
+  /* Everything here is in units of A, the ring radius, so the same numbers can
+     be measured once and drawn at any size. */
+  function quad(psi) {
+    var c = Math.cos(psi), s = Math.sin(psi);
+    var C = [c * U[0] + s * V[0], c * U[1] + s * V[1], c * U[2] + s * V[2]];
+    var T = [-s * U[0] + c * V[0], -s * U[1] + c * V[1], -s * U[2] + c * V[2]];
+    var hw = TILE / 2;
+    var hh = hw * ASPECT;
+
+    function pr(x, y, z) {
+      var k = DIST / (DIST - z);
+      return [k * x, k * y];
+    }
+    var p0 = pr(C[0], C[1], C[2]);
+    var pT = pr(C[0] + T[0] * hw, C[1] + T[1] * hw, C[2] + T[2] * hw);
+    var pA = pr(C[0] + AXV[0] * hh, C[1] + AXV[1] * hh, C[2] + AXV[2] * hh);
+
+    return {
+      x: p0[0], y: p0[1],
+      ex: pT[0] - p0[0], ey: pT[1] - p0[1],
+      fx: pA[0] - p0[0], fy: pA[1] - p0[1],
+      z: C[2], face: Math.abs(C[2])
+    };
+  }
+
+  /* The old fit was an estimate — "roughly a quarter plate past the ellipse" —
+     and it was wrong by enough that the near plates were cut off by the band.
+     The true extent is cheap to measure: sample the whole revolution at unit
+     scale and take the extremes. Because the projection is linear in A, one
+     measurement holds at every size. */
+  var EXTENT = (function () {
+    var mx = TRAY, my = TRAY * RATIO;      /* start with the tray itself */
+    for (var k = 0; k < 24; k++) {
+      var turn = k * TAU / 24;
+      for (var i = 0; i < N; i++) {
+        var q = quad(PHASE * Math.PI / 180 - i * TAU / N + turn);
+        for (var sx = -1; sx <= 1; sx += 2) {
+          for (var sy = -1; sy <= 1; sy += 2) {
+            var x = Math.abs(q.x + sx * q.ex + sy * q.fx);
+            var y = Math.abs(q.y + sx * q.ey + sy * q.fy);
+            if (x > mx) mx = x;
+            if (y > my) my = y;
+          }
+        }
+      }
+    }
+    return { x: mx, y: my };
+  })();
+
   /* ---- viewport -------------------------------------------------------- */
   var W = 0, H = 0, A = 1, CX = 0, CY = 0, DPR = 1;
-  var rate = IDLE, angle = 0, prev = 0, running = false, raf = 0, hot = false;
+  var rate = IDLE, angle = 0, spin = 0, prev = 0, running = false, raf = 0, hot = false;
 
   function resize() {
     var r = host.getBoundingClientRect();
@@ -211,44 +307,58 @@
     cv.height = H;
     CX = W / 2;
     CY = H / 2;
-    /* fit the ribbon to the band. The plates stick out past the ellipse by
-       roughly a quarter of a plate on every side, so the horizontal term
-       allows for that; the vertical term allows for the tilt plus half a
-       plate standing on the ribbon */
-    A = Math.min(W * 0.36, H * 0.46 / (RATIO + TILE * ASPECT / 2));
+    var padX = 10 * DPR, padY = Math.max(GAP * Math.min(W, H), 8 * DPR);
+    A = Math.min((W / 2 - padX) / EXTENT.x, (H / 2 - padY) / EXTENT.y);
   }
 
-  function project(x, y, z) {
-    var k = A * DIST / (DIST - z);
-    return [CX + k * x, CY + k * y, k];
+  /* ---- the tray -------------------------------------------------------- */
+  /* Without a surface under them the plates read as twelve floating tiles.
+     A nearly invisible disc is enough to make the ring a thing — the eye uses
+     the rim as a horizon. */
+  function drawTray() {
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(ax);
+    ctx.scale(1, RATIO);
+
+    var r = A * TRAY;
+    var g = ctx.createRadialGradient(0, 0, r * 0.18, 0, 0, r);
+    g.addColorStop(0, 'rgba(154,107,255,0.10)');
+    g.addColorStop(0.62, 'rgba(120,80,220,0.045)');
+    g.addColorStop(1, 'rgba(120,80,220,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, TAU);
+    ctx.fill();
+
+    ctx.lineWidth = Math.max(1, 1.1 * DPR);
+    ctx.strokeStyle = 'rgba(201,168,255,0.16)';
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, TAU);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(201,168,255,0.07)';
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.70, 0, TAU);
+    ctx.stroke();
+
+    ctx.restore();
   }
 
-  function drawPlate(i, psi) {
-    var c = Math.cos(psi), s = Math.sin(psi);
-    var C = [c * U[0] + s * V[0], c * U[1] + s * V[1], c * U[2] + s * V[2]];
-    var T = [-s * U[0] + c * V[0], -s * U[1] + c * V[1], -s * U[2] + c * V[2]];
-    var hw = TILE / 2;               /* half width, in ring radii */
-    var hh = hw * ASPECT;
-
-    var p0 = project(C[0], C[1], C[2]);
-    var pT = project(C[0] + T[0] * hw, C[1] + T[1] * hw, C[2] + T[2] * hw);
-    var pA = project(C[0] + AXV[0] * hh, C[1] + AXV[1] * hh, C[2] + AXV[2] * hh);
-
-    var ex = pT[0] - p0[0], ey = pT[1] - p0[1];
-    var fx = pA[0] - p0[0], fy = pA[1] - p0[1];
-    if (Math.abs(ex * fy - ey * fx) < 0.5) return;   /* edge on */
+  function drawPlate(q, img) {
+    if (Math.abs(q.ex * q.fy - q.ey * q.fx) < 0.5 / (A * A)) return;   /* edge on */
 
     /* a plate whose face is turned away from the eye is a sliver, and a sliver
        that is also bright reads as a rendering fault — fade it out instead */
-    var face = Math.abs(C[2]);
-    var alpha = (face - 0.05) / 0.16;
+    var alpha = (q.face - 0.05) / 0.16;
     if (alpha <= 0) return;
     if (alpha < 1) ctx.globalAlpha = alpha * alpha;
 
-    var facing = C[2] > 0;
-    var img = (facing ? FRONT : BACK)[i];
-
-    ctx.setTransform(ex * 2 / TS, ey * 2 / TS, fx * 2 / TS, fy * 2 / TS, p0[0], p0[1]);
+    ctx.setTransform(
+      A * q.ex * 2 / TS, A * q.ey * 2 / TS,
+      A * q.fx * 2 / TS, A * q.fy * 2 / TS,
+      CX + A * q.x, CY + A * q.y
+    );
     ctx.drawImage(img, -TS / 2, -TS / 2, TS, TS);
     ctx.globalAlpha = 1;
   }
@@ -259,15 +369,20 @@
     ctx.clearRect(0, 0, W, H);
     ctx.imageSmoothingQuality = 'high';
 
+    drawTray();
+
     var list = [], i;
     for (i = 0; i < N; i++) {
       var psi = PHASE * Math.PI / 180 - i * TAU / N + angle;
-      var c = Math.cos(psi), s = Math.sin(psi);
-      list.push({ i: i, psi: psi, z: c * U[2] + s * V[2] });
+      var q = quad(psi);
+      q.i = i;
+      list.push(q);
     }
     list.sort(function (a, b) { return a.z - b.z; });   /* far first */
 
-    for (i = 0; i < list.length; i++) drawPlate(list[i].i, list[i].psi);
+    for (i = 0; i < list.length; i++) {
+      drawPlate(list[i], (list[i].z > 0 ? FRONT : BACK)[list[i].i]);
+    }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
@@ -281,10 +396,14 @@
     var want = hot ? HOT : IDLE;
     rate += (want - rate) * Math.min(1, dt / 0.45);
 
-    if (Math.abs(rate) > 0.005) {
-      angle = (angle + dt * rate * TAU / DUR) % TAU;
-      render();
+    if (!dragging) {
+      angle = (angle + dt * (rate * TAU / DUR + spin)) % TAU;
+      /* the throw decays; below the idle rate it is indistinguishable anyway */
+      spin *= Math.exp(-2.6 * dt);
+      if (Math.abs(spin) < 0.012) spin = 0;
     }
+
+    render();
     raf = requestAnimationFrame(frame);
   }
 
@@ -318,15 +437,68 @@
 
   resize();
 
-  host.addEventListener('pointerenter', function () { hot = true; start(); });
-  host.addEventListener('pointermove', function () { hot = true; }, { passive: true });
-  host.addEventListener('pointerleave', function () { hot = false; });
-  /* a touch device never sends pointerleave after a tap, so the ribbon would
-     stay at hover speed for the rest of the session */
-  host.addEventListener('pointerup', function () {
-    if (hot) setTimeout(function () { hot = false; }, 900);
+  /* ---- pointer + drag -------------------------------------------------- */
+  /* A once-per-frame loop that never responds to anything is a screen saver.
+     Letting it be thrown costs ten lines and gives the ring a reason to exist
+     in the page: it is the one thing here you can push. */
+  var dragging = false, dragX = 0, dragT = 0, dragMoved = 0;
+
+  function touched() {
+    if (host.classList.contains('is-touched')) return;
+    host.classList.add('is-touched');
+  }
+
+  host.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true;
+    dragX = e.clientX;
+    dragT = performance.now();
+    dragMoved = 0;
+    spin = 0;
+    hot = true;
+    host.classList.add('is-dragging');
+    try { host.setPointerCapture(e.pointerId); } catch (err) {}
+    start();
+  });
+
+  host.addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'touch') hot = true;
+    if (!dragging) return;
+    var now = performance.now();
+    var dx = e.clientX - dragX;
+    var dt = Math.max(8, now - dragT);
+    dragX = e.clientX;
+    dragT = now;
+    dragMoved += Math.abs(dx);
+
+    /* radians per pixel: a full drag across the band is about a third of a
+       revolution, which is enough to feel connected without feeling loose */
+    var d = dx * 0.0042;
+    angle = (angle + d) % TAU;
+    /* low-pass the throw: one jittery last frame should not become the fling */
+    spin = spin * 0.55 + (d / (dt / 1000)) * 0.45;
+    if (Math.abs(dragMoved) > 4) touched();
+    render();
   }, { passive: true });
-  host.addEventListener('pointercancel', function () { hot = false; });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    host.classList.remove('is-dragging');
+    /* a real flick keeps its momentum; a slow nudge should not */
+    if (Math.abs(spin) < 0.35) spin = 0;
+    if (e && e.pointerType === 'touch') {
+      setTimeout(function () { hot = false; }, 700);
+    }
+  }
+  host.addEventListener('pointerup', endDrag);
+  host.addEventListener('pointercancel', endDrag);
+
+  host.addEventListener('pointerenter', function () { hot = true; start(); });
+  host.addEventListener('pointerleave', function () {
+    hot = false;
+    endDrag();
+  });
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
@@ -342,7 +514,7 @@
   }
 
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) stop();
+    if (document.hidden) stop(); else if (!document.hidden) start();
   });
 
   var q = 0;
@@ -351,5 +523,9 @@
     q = setTimeout(function () { resize(); render(); }, 160);
   }, { passive: true });
 
-  window.__gallery = { plates: function () { return FRONT.length; }, angle: function () { return angle; } };
+  window.__gallery = {
+    plates: function () { return FRONT.length; },
+    angle: function () { return angle; },
+    fit: function () { return { A: A, extent: EXTENT, W: W, H: H }; }
+  };
 })();

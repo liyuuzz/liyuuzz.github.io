@@ -136,7 +136,9 @@
     for (var i = 0; i < lists.length; i++) bindList(lists[i]);
   }
 
-  window.__contentReady = fetch('content.json', { cache: 'no-store' })
+  /* no-cache, not no-store: every page needs this file, and a revalidation is
+     a 304 while a no-store fetch is the whole document again */
+  window.__contentReady = fetch('content.json', { cache: 'no-cache' })
     .then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();

@@ -9,9 +9,11 @@
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
-<script>document.documentElement.className += " js";</script>
+<script>(function(d,s){d.className+=" js";try{if(s.getItem("nav-leaving")==="1"){s.removeItem("nav-leaving");d.className+=" is-arriving";}}catch(e){}})(document.documentElement,sessionStorage);</script>
 </head>
 <body>
+
+<div class="veil" aria-hidden="true"></div>
 
 <svg width="0" height="0" aria-hidden="true" style="position:absolute;pointer-events:none">
   <defs>
@@ -116,12 +118,16 @@
 <template id="tpl-note">
   <a class="note-row" href="#">
     <time data-c="date"></time>
-    <span class="t" data-c="title"></span>
+    <span class="note-main">
+      <span class="t" data-c="title"></span>
+      <span class="d" data-c="excerpt"></span>
+    </span>
     <span class="a" aria-hidden="true">↗</span>
   </a>
 </template>
 
 <script src="assets/js/content.js" defer></script>
 <script src="assets/js/chrome.js" defer></script>
+<script src="assets/js/nav.js" defer></script>
 </body>
 </html>

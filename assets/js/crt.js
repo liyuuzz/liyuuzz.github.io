@@ -330,13 +330,17 @@
   }
 
   /* the work's own name, straight out of content.json */
-  fetch('content.json', { cache: 'no-store' })
+  fetch('content.json', { cache: 'no-cache' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) {
       var item = d && d.works && d.works.items && d.works.items[idx - 1];
       if (item && item.title) {
         title = item.title;
         document.title = title + '｜Profunfis';
+        var h1 = document.getElementById('crtTitle');
+        if (h1) h1.textContent = title;
+        var meta = document.querySelector('meta[name="description"]');
+        if (meta && item.desc) meta.setAttribute('content', item.desc);
       }
     })
     .catch(function () {})
@@ -354,12 +358,12 @@
   /* the whole screen is the way back, the way a terminal takes any key */
   document.addEventListener('click', function (e) {
     if (e.target && e.target.closest && e.target.closest('a')) return;
-    location.href = 'index.html';
+    location.href = 'works.html';
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' || e.key === 'Enter' || e.key === 'Backspace' || e.key === ' ') {
       e.preventDefault();
-      location.href = 'index.html';
+      location.href = 'works.html';
     }
   });
 })();

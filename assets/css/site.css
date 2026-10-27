@@ -34,6 +34,9 @@
 
   --gutter: clamp(20px, 5vw, 72px);
   --maxw: 1240px;
+  /* the reading column: one width, used by the note header and the note body,
+     so the headline and the first paragraph start on the same line */
+  --measure: 660px;
 
   /* form controls, scrollbars and the canvas backdrop all follow this */
   color-scheme: dark;
@@ -545,8 +548,8 @@ a{ color:inherit; }
   background:linear-gradient(90deg,transparent,rgba(201,168,255,.22) 42%,rgba(236,226,255,.82) 54%,transparent);
 }
 .js .portal-media{ clip-path:inset(0 100% 0 0 round 12px); }
-.portal.is-live .portal-media{ animation:portal-cut 1.35s steps(12,end) both; }
-.portal.is-live::after{ animation:portal-scan 1.35s steps(12,end) both; }
+.portal.is-live .portal-media{ animation:portal-cut 1.05s steps(12,end) both; }
+.portal.is-live::after{ animation:portal-scan 1.05s steps(12,end) both; }
 .intro-done .portal-media{ clip-path:none; animation:none; }
 @keyframes portal-cut{
   from{ clip-path:inset(0 100% 0 0 round 12px); }
@@ -593,8 +596,11 @@ a{ color:inherit; }
   transition:padding .4s var(--ease), background .4s var(--ease);
 }
 .note-row:hover{ padding-left:14px; background:rgba(237,233,248,.035); }
-.note-row time{ font-size:12.5px; letter-spacing:.08em; color:var(--card-label); font-variant-numeric:tabular-nums; }
+.note-row time{ font-size:12.5px; letter-spacing:.08em; color:var(--card-label); font-variant-numeric:tabular-nums; padding-top:3px; }
+.note-main{ display:flex; flex-direction:column; gap:7px; min-width:0; }
 .note-row .t{ font-size:clamp(16px,1.5vw,19px); font-weight:400; letter-spacing:-.01em; }
+.note-row .d{ font-size:13.5px; line-height:1.65; font-weight:300; color:var(--ink-faint); max-width:52em; }
+.section--dark .note-row .d{ color:rgba(232,227,247,.44); }
 .note-row .a{ justify-self:end; font-size:15px; color:var(--card-label); transition:transform .4s var(--ease-out), color .3s var(--ease); }
 .note-row:hover .a{ transform:translateX(4px); color:var(--accent); }
 .section--dark .notes-list{ border-top-color:rgba(247,244,239,.14); }
@@ -752,7 +758,10 @@ a:focus-visible, button:focus-visible{
   .dock-mark svg{ width:52%; height:52%; }
 
   .headline{ left:calc(34 * var(--u)); top:calc(168 * var(--u)); font-size:calc(56 * var(--u)); line-height:calc(66 * var(--u)); }
-  .lede{ left:calc(36 * var(--u)); top:calc(322 * var(--u)); width:calc(420 * var(--u)); font-size:calc(19 * var(--u)); line-height:calc(28 * var(--u)); }
+  /* 19u on a 390px phone is 9.8px. The composition can scale with the
+     viewport; the copy cannot. */
+  .lede{ left:calc(36 * var(--u)); top:calc(314 * var(--u)); width:calc(520 * var(--u));
+         font-size:max(15px, calc(19 * var(--u))); line-height:max(23px, calc(28 * var(--u))); }
   .cta{ left:calc(34 * var(--u)); top:calc(456 * var(--u)); height:max(54px, calc(66 * var(--u))); padding:0 max(22px, calc(28 * var(--u))) 0 max(20px, calc(24 * var(--u))); gap:calc(12 * var(--u)); font-size:max(13px, calc(15 * var(--u))); }
 
   .mark-wrap{ left:calc(-70 * var(--u)); top:calc(600 * var(--u)); width:calc(900 * var(--u)); height:calc(820 * var(--u)); }
@@ -895,3 +904,174 @@ a:focus-visible, button:focus-visible{
 }
 .lost-cta:hover{ background:rgba(154,107,255,.22); border-color:rgba(201,168,255,.55); transform:translateY(-2px); }
 .lost-cta svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+
+/* ==========================================================================
+   11. moving between pages — the curtain
+   Two halves of one gesture: it comes up from the bottom to hide the page you
+   are leaving, and drops away from the top to give you the next one. Themed
+   rather than neutral so the gap reads as part of the site, not a blank.
+   ========================================================================== */
+.veil{
+  position:fixed; inset:0; z-index:9000;
+  pointer-events:none;
+  background:
+    radial-gradient(70% 50% at 50% 120%, rgba(154,107,255,.16) 0%, rgba(154,107,255,0) 70%),
+    var(--ink);
+  transform:translateY(100%);
+  transition:transform .46s var(--ease-out);
+  will-change:transform;
+}
+html.is-leaving .veil{ transform:translateY(0); transition:transform .24s cubic-bezier(.4,0,.85,.3); }
+/* armed in <head> before the first paint, so the new document starts covered */
+html.is-arriving .veil{ transform:translateY(0); transition:none; }
+
+@media (prefers-reduced-motion:reduce){
+  .veil{ display:none; }
+}
+
+/* ---- copy confirmation ------------------------------------------------ */
+.copy-toast{
+  position:fixed; z-index:9100;
+  left:50%; bottom:max(28px, env(safe-area-inset-bottom, 0px));
+  transform:translate(-50%, 14px);
+  max-width:min(92vw, 460px);
+  padding:11px 18px; border-radius:999px;
+  background:rgba(23,16,36,.94);
+  border:1px solid rgba(201,168,255,.28);
+  box-shadow:0 16px 40px -18px rgba(0,0,0,.9);
+  color:var(--rice); font-size:13px; line-height:1.5; letter-spacing:.01em;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s var(--ease), transform .4s var(--ease-out);
+}
+.copy-toast.is-on{ opacity:1; transform:translate(-50%, 0); }
+
+.mail-hint{
+  margin-top:16px; max-width:31em;
+  font-size:13.5px; line-height:1.7; color:var(--ink-soft);
+  animation:fade-up .5s var(--ease-out) both;
+}
+.mail-hint[hidden]{ display:none; }
+.mail-hint-open{
+  color:var(--accent-2); text-decoration:none;
+  border-bottom:1px solid rgba(201,168,255,.34); padding-bottom:1px;
+  margin-left:.55em;
+}
+.mail-hint-open:hover{ color:var(--rice); border-color:rgba(237,233,248,.5); }
+@keyframes fade-up{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+/* ==========================================================================
+   12. one note
+   A single measure of type and nothing else competing with it. The column is
+   capped in characters rather than pixels: line length is the whole point of
+   a reading page.
+   ========================================================================== */
+.page-head--note{ padding-bottom:clamp(28px,3.6vw,48px); }
+/* the header and the article share one centred column, otherwise the headline
+   hangs off the left edge while the body sits in the middle */
+.page-head--note .wrap{ max-width:calc(var(--measure) + 2 * var(--gutter)); margin-inline:auto; }
+.note-back{
+  display:inline-block; margin-bottom:clamp(28px,4vw,44px);
+  font-size:12.5px; font-weight:500; letter-spacing:.06em;
+  color:var(--ink-faint); text-decoration:none;
+  border-bottom:1px solid rgba(232,227,247,.18); padding-bottom:3px;
+  transition:color .3s var(--ease), border-color .3s var(--ease);
+}
+.note-back:hover{ color:var(--rice); border-color:rgba(237,233,248,.45); }
+.note-date{
+  display:block; margin-bottom:14px;
+  font-size:12.5px; letter-spacing:.16em; color:var(--accent); font-variant-numeric:tabular-nums;
+}
+.page-head--note h1{ font-size:clamp(28px, 3.4vw, 46px); max-width:none; }
+
+.prose{
+  max-width:var(--measure);
+  margin-inline:auto;
+  font-size:clamp(16px, 1.55vw, 18.5px);
+  line-height:2; font-weight:300;
+  color:rgba(232,227,247,.76);
+}
+.prose p{ margin:0 0 1.35em; }
+.prose p:first-child{
+  font-size:1.08em; color:var(--rice);
+}
+/* a one-line paragraph is a beat, not a paragraph — the accent stops the eye */
+.prose .prose-beat{
+  margin:1.9em 0;
+  font-size:1.02em; color:var(--accent-2); letter-spacing:.01em;
+}
+.prose .prose-beat:last-child{ margin-bottom:0; }
+
+.note-nav{
+  margin-top:clamp(56px, 8vw, 96px); padding-top:26px;
+  border-top:1px solid var(--panel-line);
+  display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  max-width:var(--measure);
+  margin-inline:auto;
+}
+.note-step{
+  font-size:14.5px; line-height:1.5; color:var(--ink-soft); text-decoration:none;
+  max-width:46%;
+  transition:color .3s var(--ease);
+}
+.note-step:hover{ color:var(--accent-2); }
+.note-step--prev{ margin-left:auto; text-align:right; }
+.note-step[hidden]{ display:none; }
+
+/* ==========================================================================
+   13. measurements taken after the first round of review
+   ========================================================================== */
+/* a widow in a headline is the first thing anyone notices */
+.closing h2, .page-head h1, .sec-head h2{ text-wrap:balance; }
+
+/* the plate ribbon is draggable: say so with the cursor */
+.gallery-band{ cursor:grab; touch-action:pan-y; }
+.gallery-band.is-dragging{ cursor:grabbing; }
+.gallery-band.is-dragging canvas{ transition:none; }
+
+.gallery-hint{
+  position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+  font-size:11.5px; letter-spacing:.24em; text-transform:uppercase;
+  color:rgba(232,227,247,.30);
+  pointer-events:none; white-space:nowrap;
+  transition:opacity .6s var(--ease);
+}
+.gallery-band.is-touched .gallery-hint{ opacity:0; }
+
+@media (max-width:900px){
+  /* --u turns every size into a fraction of a phone's width, which is right
+     for the composition and wrong for anything that has to be read */
+  .gallery-band{ cursor:default; }
+  .gallery-hint{ bottom:10px; font-size:10.5px; letter-spacing:.2em; }
+}
+
+/* ---- utility ----------------------------------------------------------- */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* Arriving behind the curtain: the page is photographed while it is still
+   covered, and the staggered intro would then play *after* the reveal — the
+   dock half drawn, the headline still rising. The curtain is the entrance, so
+   the entrance choreography is skipped and the finished page is what lifts
+   into view. The class only lives for the length of the reveal. */
+html.curtain-arrived .fade,
+html.curtain-arrived .rise,
+html.curtain-arrived .mask,
+html.curtain-arrived .mask-circle,
+html.curtain-arrived .dock,
+html.curtain-arrived .dock-item,
+html.curtain-arrived .mark-wrap{
+  opacity:1 !important;
+  clip-path:none !important;
+  transform:none !important;
+  transition:none !important;
+  animation:none !important;
+}
+html.curtain-arrived .par{ transform:none !important; }
+
+/* a card revealed while the page curtain is still down has nothing to reveal
+   with: the wipe belongs to scrolling into view, not to arriving */
+.portal.is-instant .portal-media{ clip-path:none !important; animation:none !important; }
+.portal.is-instant::after{ display:none !important; }
+.portal.is-instant .pixel-reveal{ display:none !important; }

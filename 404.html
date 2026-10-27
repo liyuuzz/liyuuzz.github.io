@@ -4,14 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>404｜这一页不在</title>
+<meta name="description" content="这一页不在。可能是链接写错了，也可能是我还没写。">
 <meta name="theme-color" content="#07050D">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
-<script>document.documentElement.className += " js";</script>
+<script>(function(d,s){d.className+=" js";try{if(s.getItem("nav-leaving")==="1"){s.removeItem("nav-leaving");d.className+=" is-arriving";}}catch(e){}})(document.documentElement,sessionStorage);</script>
 </head>
 <body>
+
+<div class="veil" aria-hidden="true"></div>
 
 <main class="lost">
   <div class="lost-mark" aria-hidden="true"><canvas id="markCanvas"></canvas></div>
@@ -28,5 +31,6 @@
 </main>
 
 <script src="assets/js/mark.js" defer></script>
+<script src="assets/js/nav.js" defer></script>
 </body>
 </html>

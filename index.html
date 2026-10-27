@@ -9,9 +9,11 @@
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
-<script>document.documentElement.className += " js";</script>
+<script>(function(d,s){d.className+=" js";try{if(s.getItem("nav-leaving")==="1"){s.removeItem("nav-leaving");d.className+=" is-arriving";}}catch(e){}})(document.documentElement,sessionStorage);</script>
 </head>
 <body>
+
+<div class="veil" aria-hidden="true"></div>
 
 <!-- the mark: a twelve-ray star with one ray missing, and the piece that left -->
 <svg width="0" height="0" aria-hidden="true" style="position:absolute;pointer-events:none">
@@ -119,7 +121,7 @@
 
   <!-- twelve plates in slow orbit — the room you walk through on the way to
        the works. Masked at its edges so it never sits in a rectangle -->
-  <div class="gallery-band" aria-hidden="true"><canvas id="galleryCanvas"></canvas></div>
+  <div class="gallery-band"><canvas id="galleryCanvas" aria-hidden="true"></canvas><p class="gallery-hint" aria-hidden="true" data-c="gallery.hint">拖着转一下</p></div>
 
   <section class="section" id="works">
     <div class="wrap">
@@ -159,6 +161,10 @@
           <span class="cta-lbl" data-c="closing.cta">写信</span>
           <svg class="cta-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h15"/><path d="m13.5 6 6 6-6 6"/></svg>
         </a>
+        <p class="mail-hint" hidden>
+          <span data-c="closing.copy_note">邮箱已经复制好了。</span>
+          <a class="mail-hint-open" href="mailto:hello@example.com" data-c-href="mailto:site.email">用邮件客户端打开</a>
+        </p>
       </div>
 
       <!-- the mark, written in type. One click turns it into the word. -->
@@ -214,12 +220,16 @@
 <template id="tpl-note">
   <a class="note-row" href="#">
     <time data-c="date"></time>
-    <span class="t" data-c="title"></span>
+    <span class="note-main">
+      <span class="t" data-c="title"></span>
+      <span class="d" data-c="excerpt"></span>
+    </span>
     <span class="a" aria-hidden="true">↗</span>
   </a>
 </template>
 
 <script src="assets/js/content.js" defer></script>
+<script src="assets/js/nav.js" defer></script>
 <script src="assets/js/chrome.js" defer></script>
 <script src="assets/js/mark.js" defer></script>
 <script src="assets/js/wordmark.js" defer></script>

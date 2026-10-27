@@ -17,9 +17,13 @@
     var here = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
     var items = document.querySelectorAll('.dock [data-dock]');
     for (var i = 0; i < items.length; i++) {
+      /* the mark tile and the outbound pill are not sections — marking either
+         of them active would put two highlights in a five-item bar */
+      var skip = items[i].classList.contains('dock-mark') ||
+                 items[i].classList.contains('dock-item--enter');
       var href = (items[i].getAttribute('href') || '').split('#')[0].toLowerCase();
       items[i].classList.remove('is-active');
-      if (href && href === here) items[i].classList.add('is-active');
+      if (!skip && href && href === here) items[i].classList.add('is-active');
     }
   })();
 
@@ -293,11 +297,19 @@
   /* ====================================================================== *
    * portal reveals — a stepped clip with sampled dots along the edge
    * ====================================================================== */
-  var CUT_STEPS = 12, CUT_MS = 1350;
+  var CUT_STEPS = 12, CUT_MS = 1050;
 
   function revealPortal(fig) {
     if (fig.dataset.revealed === '1') return;
     fig.dataset.revealed = '1';
+
+    /* arriving through the page curtain: the whole point is that the page is
+       finished before it is revealed, so the card does not assemble itself in
+       front of the reader — it is simply there */
+    if (document.documentElement.classList.contains('curtain-arrived')) {
+      fig.classList.add('is-instant', 'is-live');
+      return;
+    }
 
     var canvasEl = fig.querySelector('.pixel-reveal');
     var media = fig.querySelector('.portal-media');
@@ -423,10 +435,16 @@
 
   function boot() {
     initDock();
-    initPortals();
     startParallax();
     startTick();
     guardPlaceholders();
+
+    /* The portal cards do not exist yet: content.json builds them. Observing
+       at DOMContentLoaded found zero .portal nodes, so nothing was ever
+       revealed and every card stayed clipped until the intro's 2.9s timer
+       dropped the clips wholesale — which is why a freshly loaded works page
+       sat there as three empty rectangles. */
+    (window.__contentReady || Promise.resolve()).then(initPortals, initPortals);
 
     /* everything the tick loop drives lives in the hero, so there is nothing
        to animate once it has scrolled away */
