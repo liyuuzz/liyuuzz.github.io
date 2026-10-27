@@ -11,9 +11,15 @@
 <link rel="stylesheet" href="assets/css/site.css">
 <script>(function(d,s){d.className+=" js";try{if(s.getItem("nav-leaving")==="1"){s.removeItem("nav-leaving");d.className+=" is-arriving";}}catch(e){}})(document.documentElement,sessionStorage);</script>
 </head>
-<body>
+<body class="has-arc">
 
 <div class="veil" aria-hidden="true"></div>
+
+<!-- the arc: quieter here than on the works page — this one is the light
+     in the room, not the picture -->
+<div class="arc-bg" aria-hidden="true"><canvas id="arcCanvas"
+  data-peak="0.42" data-drop="0.30" data-thick="0.9" data-gain="0.78"
+  data-core="2.0" data-dot="4.2" data-speed="0.8"></canvas></div>
 
 <svg width="0" height="0" aria-hidden="true" style="position:absolute;pointer-events:none">
   <defs>
@@ -129,6 +135,7 @@
 <script src="assets/js/content.js" defer></script>
 <script src="assets/js/chrome.js" defer></script>
 <script src="assets/js/flow.js" defer></script>
+<script src="assets/js/arc.js" defer></script>
 <script src="assets/js/nav.js" defer></script>
 </body>
 </html>

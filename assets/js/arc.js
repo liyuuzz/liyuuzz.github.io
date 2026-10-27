@@ -26,6 +26,17 @@
   var TAU = Math.PI * 2;
 
   /* ---- tuning ---------------------------------------------------------- */
+  /* Each page that wears this background says what kind of room it is with
+     data-* attributes on the canvas, so there is one renderer and not two.
+     The works page wants the arch to be the picture; the notes page wants it
+     to be the light in the room. */
+  function num(name, dflt) {
+    var raw = cv.getAttribute('data-' + name);
+    if (raw === null || raw === '') return dflt;
+    var v = parseFloat(raw);
+    return isFinite(v) ? v : dflt;
+  }
+
   var SPACING = 5;          /* grid pitch, css px                          */
   var DOT = 4.4;            /* largest a dot can get — a hair under the
                                grid pitch, so the mesh stays readable as dots */
@@ -37,6 +48,16 @@
   var GAIN = 0.92;          /* overall brightness                          */
   var LEVELS = 28;          /* intensity buckets                           */
   var CORE = 1.7;           /* >1 pulls the light onto the curve itself    */
+
+  SPACING = num('spacing', SPACING);
+  DOT = num('dot', DOT);
+  PEAK = num('peak', PEAK);
+  DROP = num('drop', DROP);
+  WIDTH = num('width', WIDTH);
+  THICK = num('thick', THICK);
+  SPEED = num('speed', SPEED);
+  GAIN = num('gain', GAIN);
+  CORE = num('core', CORE);
 
   /* ---- palette --------------------------------------------------------- */
   /* Three stops instead of the reference's stack of powers: the arm of the arc
@@ -103,8 +124,11 @@
     var step = narrow ? 4 : SPACING;
     var cx = W / 2;
     var half = (W * WIDTH) / 2;
-    var peakY = H * (narrow ? 0.36 : PEAK);
-    var drop = H * (narrow ? 0.22 : DROP);
+    /* narrow screens scale the page's own tuning rather than replacing it, or
+       two pages tuned differently would collapse into the same picture on a
+       phone */
+    var peakY = H * (narrow ? Math.max(PEAK, 0.36) : PEAK);
+    var drop = H * DROP * (narrow ? 0.62 : 1);
     var bandK = narrow ? 0.045 : 0.072;
     var bandK2 = narrow ? 0.028 : 0.042;
     var t = time;
