@@ -462,10 +462,12 @@ a{ color:inherit; }
 .section{
   position:relative; padding:clamp(72px,11vw,150px) 0;
   background:
-    radial-gradient(90% 62% at 50% -14%, rgba(154,107,255,.06) 0%, rgba(154,107,255,0) 62%),
+    radial-gradient(90% 62% at 50% -14%, rgba(154,107,255,.06) 0%, rgba(154,107,255,0) 86%),
     var(--ink);
   color:var(--rice);
-  border-top:1px solid var(--rule);
+  /* no border-top: with the room behind the page, a full-width hairline is the
+     one thing that still reads as "the edge of a panel" — and it is now the
+     only hard line left between sections */
 }
 .section--dark{
   background:
@@ -1182,19 +1184,34 @@ main{ position:relative; z-index:1; }
 }
 /* the ribbon is the window: through it you see the room itself */
 .gallery-band{ background:transparent; }
+/* One scrim, one opacity, everywhere — and it is deliberately *thin*. At 58%
+   the sections still sealed the room off behind them; at 40% the corridor of
+   points reads straight through the copy. To buy back the legibility the wall
+   used to provide, the text carries its own soft shadow (below) instead of the
+   whole section going opaque. The per-section radial glows that used to sit on
+   top of this scrim are gone: their edges were the horizontal bands you could
+   see at every boundary. Only the ribbon handoff keeps a fade, because that is
+   the one place the room runs at full strength. */
 .section{
-  background:
-    radial-gradient(90% 62% at 50% -14%, rgba(154,107,255,.06) 0%, rgba(154,107,255,0) 62%),
-    /* arrives out of the room rather than starting at full opacity */
-    linear-gradient(180deg, rgba(7,5,13,0) 0px, rgba(7,5,13,.88) 190px);
+  background:rgba(7,5,13,.40);
 }
 .section--dark{
-  background:
-    radial-gradient(70% 58% at 14% 0%, rgba(96,58,178,.20) 0%, rgba(96,58,178,0) 66%),
-    radial-gradient(60% 50% at 92% 102%, rgba(154,107,255,.09) 0%, rgba(154,107,255,0) 70%),
-    linear-gradient(180deg, rgba(8,5,16,.55) 0px, rgba(8,5,16,.86) 190px);
+  background:rgba(7,5,13,.40);
 }
-.footer{ background:rgba(7,5,13,.92); }
+/* the only section that still needs a fade: it is the one that meets the
+   ribbon, where the room is not behind a scrim at all */
+.gallery-band + .section{
+  background:linear-gradient(180deg, rgba(7,5,13,0) 0px, rgba(7,5,13,.40) 210px);
+}
+.footer{
+  background:linear-gradient(180deg, rgba(7,5,13,.40) 0%, rgba(7,5,13,.72) 100%);
+}
+/* copy lifts off the room with a shadow rather than a wall behind it */
+.section h2, .section h3, .section p, .section .label,
+.section .sec-more, .section .note-row,
+.closing h2, .closing p, .closing .mail-hint{
+  text-shadow:0 1px 16px rgba(7,5,13,.80), 0 0 3px rgba(7,5,13,.55);
+}
 .page-head{
   background:
     radial-gradient(70% 60% at 84% 0%, rgba(154,107,255,.17) 0%, rgba(154,107,255,0) 62%),

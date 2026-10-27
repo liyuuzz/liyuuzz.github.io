@@ -59,6 +59,14 @@
   GAIN = num('gain', GAIN);
   CORE = num('core', CORE);
 
+  /* Two effects live here, not one. The works page is an arch of soft round
+     dots — a picture you read. The notes page is a grid of hard square cells
+     — the same arch, but sampled by a chip instead of drawn by a brush. Same
+     geometry, opposite texture, so the two pages are never mistaken for each
+     other even on a phone where the shape itself barely differs. */
+  var MODE = (cv.getAttribute('data-mode') || 'dot').toLowerCase();
+  var PX = num('pixel', 10);   /* pixel-arc cell pitch, css px */
+
   /* ---- palette --------------------------------------------------------- */
   /* Three stops instead of the reference's stack of powers: the arm of the arc
      in deep violet, the body in the site's accent, the core in rice rather than
@@ -87,6 +95,28 @@
     return out;
   })();
 
+  /* the pixel arc's palette: a cold teal-emerald instead of the works page's
+     violet, so the two backgrounds differ in hue as well as in texture.
+     Deep sea at the arms, jade through the body, a pale mint at the core. */
+  var P_DEEP = [8, 26, 32];
+  var P_BODY = [42, 158, 150];
+  var P_CORE = [198, 255, 240];
+  var P_LUT = (function () {
+    var out = [], mid = 0.5;
+    for (var k = 0; k < LEVELS; k++) {
+      var i = (k + 0.5) / LEVELS;
+      var a, b, t;
+      if (i < mid) { a = P_DEEP; b = P_BODY; t = i / mid; }
+      else { a = P_BODY; b = P_CORE; t = (i - mid) / (1 - mid); }
+      t = t * t * (3 - 2 * t);
+      out.push('rgb(' +
+        Math.round(a[0] + (b[0] - a[0]) * t) + ',' +
+        Math.round(a[1] + (b[1] - a[1]) * t) + ',' +
+        Math.round(a[2] + (b[2] - a[2]) * t) + ')');
+    }
+    return out;
+  })();
+
   /* ---- viewport -------------------------------------------------------- */
   var W = 1, H = 1, DPR = 1;
 
@@ -108,6 +138,67 @@
   /* ---- one frame ------------------------------------------------------- */
   var time = 0;
 
+  /* the pixel room: hard square cells on a coarse grid, each cell bright by
+     how close its centre sits to the same parabola the works page uses. No
+     anti-aliasing, no soft size ramp — a cell is lit or dark, which is what
+     makes it read as a chip rendering the arc rather than a spray of dots. */
+  function pixelFrame() {
+    var t = time;
+    var narrow = W < 760;
+    var cell = narrow ? Math.max(6, PX * 0.78) : PX;
+    var gap = cell * 0.62;                 /* drawn square inside its grid slot —
+                                              small enough that the mesh reads as
+                                              floating pixels, not a solid dome */
+    var inset = (cell - gap) * 0.5;
+    var cx = W / 2;
+    var half = (W * WIDTH) / 2;
+    var peakY = H * (narrow ? Math.max(PEAK, 0.34) : PEAK);
+    var drop = H * DROP * (narrow ? 0.60 : 1);
+    var thick = H * 0.115 * THICK;         /* half-thickness of the lit band   */
+    var cols = Math.ceil(W / cell);
+    var rows = Math.ceil(H / cell);
+
+    for (var k = 0; k < LEVELS; k++) bn[k] = 0;
+
+    for (var gy = 0; gy < rows; gy++) {
+      var y = gy * cell + cell * 0.5;
+      for (var gx = 0; gx < cols; gx++) {
+        var x = gx * cell + cell * 0.5;
+        var nx = (x - cx) / half;
+        var anx = nx < 0 ? -nx : nx;
+        if (anx > 1) continue;
+        var curve = peakY + nx * nx * drop;
+        var d = y - curve; if (d < 0) d = -d;
+        if (d >= thick) continue;
+        var cap = 1 - Math.pow(anx, 2.5);
+        if (cap <= 0.02) continue;
+        var inten = Math.pow(1 - d / thick, CORE) * cap * GAIN;
+        /* a slow wave, but coarser than the dot version's — the flicker moves
+           cell to cell, so it reads as data changing, not light shimmering */
+        var wave = Math.sin(gx * 0.34 + t * 0.7) * 0.5 + Math.cos(gy * 0.42 - t * 0.9) * 0.5;
+        inten *= 0.80 + 0.20 * wave;
+        if (inten <= 0.04) continue;
+
+        var level = (inten * LEVELS) | 0;
+        if (level >= LEVELS) level = LEVELS - 1;
+        var n = bn[level];
+        bx[level][n] = gx * cell + inset;
+        by[level][n] = gy * cell + inset;
+        bn[level] = n + 1;
+      }
+    }
+
+    for (var L = 0; L < LEVELS; L++) {
+      var count = bn[L];
+      if (!count) continue;
+      ctx.fillStyle = P_LUT[L];
+      var xs = bx[L], ys = by[L];
+      for (var n2 = 0; n2 < count; n2++) {
+        ctx.fillRect(xs[n2], ys[n2], gap, gap);
+      }
+    }
+  }
+
   function draw(force) {
     if (!running && !force) return;
 
@@ -115,6 +206,12 @@
     ctx.clearRect(0, 0, cv.width, cv.height);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.globalCompositeOperation = 'lighter';
+
+    if (MODE === 'pixel') {
+      pixelFrame();
+      ctx.globalCompositeOperation = 'source-over';
+      return;
+    }
 
     for (var k = 0; k < LEVELS; k++) bn[k] = 0;
 
