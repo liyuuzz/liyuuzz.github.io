@@ -15,6 +15,9 @@
 
 <div class="veil" aria-hidden="true"></div>
 
+<!-- the room: a corridor of points the camera walks as you scroll -->
+<canvas id="spaceCanvas" class="space-canvas" aria-hidden="true"></canvas>
+
 <!-- the mark: a twelve-ray star with one ray missing, and the piece that left -->
 <svg width="0" height="0" aria-hidden="true" style="position:absolute;pointer-events:none">
   <defs>
@@ -49,7 +52,7 @@
 </svg>
 
 <div class="hero-pin">
-<div class="hero" id="hero">
+<div class="hero" id="hero" data-cam="0">
   <div class="dock-wrap">
     <nav class="dock par-dock" style="--pd:5" data-spec aria-label="主导航">
       <a class="dock-item dock-mark" data-dock data-spec href="index.html" style="--d:120ms" aria-label="回到首页">
@@ -123,9 +126,9 @@
 
   <!-- twelve plates in slow orbit — the room you walk through on the way to
        the works. Masked at its edges so it never sits in a rectangle -->
-  <div class="gallery-band"><canvas id="galleryCanvas" aria-hidden="true"></canvas><p class="gallery-hint" aria-hidden="true" data-c="gallery.hint">拖着转一下</p></div>
+  <div class="gallery-band" data-cam="1"><canvas id="galleryCanvas" aria-hidden="true"></canvas><p class="gallery-hint" aria-hidden="true" data-c="gallery.hint">拖着转一下</p></div>
 
-  <section class="section" id="works">
+  <section class="section" id="works" data-cam="2">
     <div class="wrap">
       <div class="sec-head">
         <div>
@@ -139,7 +142,7 @@
     </div>
   </section>
 
-  <section class="section section--dark" id="notes">
+  <section class="section section--dark" id="notes" data-cam="3">
     <div class="wrap">
       <div class="sec-head">
         <div>
@@ -153,7 +156,7 @@
     </div>
   </section>
 
-  <section class="section closing" id="closing">
+  <section class="section closing" id="closing" data-cam="4">
     <div class="wrap closing-grid">
       <div class="closing-copy">
         <h2 data-c="closing.title">〔结尾一句话〕</h2>
@@ -239,5 +242,6 @@
 <script src="assets/js/gallery.js" defer></script>
 <script src="assets/js/morph.js" defer></script>
 <script src="assets/js/flow.js" defer></script>
+<script src="assets/js/space.js" defer></script>
 </body>
 </html>

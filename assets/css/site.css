@@ -93,7 +93,9 @@ a{ color:inherit; }
   position:absolute; inset:0;
   background:
     radial-gradient(72% 44% at 50% 118%, rgba(178,146,255,.20) 0%, rgba(178,146,255,.075) 42%, rgba(178,146,255,.02) 72%, rgba(178,146,255,0) 88%),
-    linear-gradient(180deg, rgba(160,120,255,0) 56%, rgba(160,120,255,.02) 78%, rgba(160,120,255,.05) 100%);
+    linear-gradient(180deg, rgba(160,120,255,0) 56%, rgba(160,120,255,.02) 78%, rgba(160,120,255,.05) 100%),
+    radial-gradient(56% 46% at 20% 90%, rgba(154,107,255,.10) 0%, rgba(154,107,255,0) 70%),
+    radial-gradient(80% 60% at 50% 120%, rgba(120,80,220,.16) 0%, rgba(120,80,220,0) 68%);
   pointer-events:none; z-index:0;
   /* the floor light dies out before the hero's own edge, so the band below it
      joins the hero on pure ground instead of on a lit strip */
@@ -435,9 +437,19 @@ a{ color:inherit; }
   position:relative;
   height:clamp(300px, 46vh, 470px);
   overflow:hidden;
-  background:var(--ink);
-  -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
-          mask-image:linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
+  background:transparent;
+  /* two masks, intersected: the sides dissolve the ribbon, the top and bottom
+     dissolve its edges into the page. Without the vertical one the band's own
+     bloom is cut off dead where the element stops and draws a seam across an
+     otherwise continuous room. */
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  -webkit-mask-composite:source-in;
+          mask-image:
+    linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+          mask-composite:intersect;
 }
 .gallery-band::before{
   content:''; position:absolute; inset:0;
@@ -773,7 +785,9 @@ a:focus-visible, button:focus-visible{
   /* 19u on a 390px phone is 9.8px. The composition can scale with the
      viewport; the copy cannot. */
   .lede{ left:calc(36 * var(--u)); top:calc(314 * var(--u)); width:calc(520 * var(--u));
-         font-size:max(15px, calc(19 * var(--u))); line-height:max(23px, calc(28 * var(--u))); }
+         font-size:max(15px, calc(19 * var(--u))); line-height:max(23px, calc(28 * var(--u)));
+         /* without this the last line is one character and a full stop */
+         text-wrap:pretty; }
   .cta{ left:calc(34 * var(--u)); top:calc(456 * var(--u)); height:max(54px, calc(66 * var(--u))); padding:0 max(22px, calc(28 * var(--u))) 0 max(20px, calc(24 * var(--u))); gap:calc(12 * var(--u)); font-size:max(13px, calc(15 * var(--u))); }
 
   .mark-wrap{ left:calc(-70 * var(--u)); top:calc(600 * var(--u)); width:calc(900 * var(--u)); height:calc(820 * var(--u)); }
@@ -1132,3 +1146,65 @@ html.curtain-arrived .par{ transform:none !important; }
 /* a title split into characters is a very wide inline-block run; keep it from
    opening gaps where the spaces used to be */
 .rv-word .wm + .wm{ margin-left:0; }
+
+/* ==========================================================================
+   15. the room — a point cloud the page is read in front of
+   Everything above this line is flat: canvas painted onto a rectangle. This is
+   the only layer with depth, and it is fixed, so scrolling moves the camera
+   rather than the background. The page's own grounds then have to be slightly
+   translucent or the room would be sealed off behind them.
+   ========================================================================== */
+.space-canvas{
+  position:fixed; inset:0; z-index:0;
+  width:100%; height:100%; display:block;
+  pointer-events:none;
+  /* no transition: it is drawn from the first frame and must not fade in
+     over the hero's own entrance */
+}
+/* the paint order has to be stated: a fixed canvas at z-index 0 otherwise
+   lands on top of static text in the footer */
+.hero-pin{ z-index:1; }
+.hero{ z-index:1; }
+main{ position:relative; z-index:1; }
+.footer{ position:relative; z-index:1; }
+.page-head{ z-index:1; }
+
+/* grounds, opened up just enough to read as air rather than a wall.
+   Only the top-right bloom stays on the element: every light that reaches the
+   hero's bottom edge lives on ::after instead, because that layer is masked
+   and this one is not. A light clipped by the element's own edge draws a
+   horizontal seam across the page — which is exactly what happened the first
+   time the grounds were opened up. */
+.hero{
+  background:
+    radial-gradient(72% 66% at 86% 4%,  rgba(76,44,142,.34) 0%, rgba(76,44,142,.10) 46%, rgba(76,44,142,0) 78%),
+    linear-gradient(180deg, rgba(7,5,13,.60) 0%, rgba(7,5,13,.60) 74%, rgba(7,5,13,0) 100%);
+}
+/* the ribbon is the window: through it you see the room itself */
+.gallery-band{ background:transparent; }
+.section{
+  background:
+    radial-gradient(90% 62% at 50% -14%, rgba(154,107,255,.06) 0%, rgba(154,107,255,0) 62%),
+    /* arrives out of the room rather than starting at full opacity */
+    linear-gradient(180deg, rgba(7,5,13,0) 0px, rgba(7,5,13,.88) 190px);
+}
+.section--dark{
+  background:
+    radial-gradient(70% 58% at 14% 0%, rgba(96,58,178,.20) 0%, rgba(96,58,178,0) 66%),
+    radial-gradient(60% 50% at 92% 102%, rgba(154,107,255,.09) 0%, rgba(154,107,255,0) 70%),
+    linear-gradient(180deg, rgba(8,5,16,.55) 0px, rgba(8,5,16,.86) 190px);
+}
+.footer{ background:rgba(7,5,13,.92); }
+.page-head{
+  background:
+    radial-gradient(70% 60% at 84% 0%, rgba(154,107,255,.17) 0%, rgba(154,107,255,0) 62%),
+    radial-gradient(60% 44% at 20% 8%, rgba(201,168,255,.055) 0%, rgba(201,168,255,0) 70%),
+    linear-gradient(180deg, rgba(7,5,13,0) 46%, rgba(7,5,13,.9) 100%),
+    rgba(7,5,13,.72);
+}
+
+/* with no WebGL the room is gone, so the grounds close back up */
+html.no-space .hero{ background: var(--ink); }
+html.no-space .gallery-band{ background: var(--ink); }
+html.no-space .section{ background: var(--ink); }
+html.no-space .footer{ background: var(--ink); }
