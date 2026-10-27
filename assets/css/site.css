@@ -1,0 +1,821 @@
+/* ==========================================================================
+   0. tokens
+   The design unit --u is the whole trick borrowed from the reference page:
+   every position and size in the hero is expressed on a 1600 x 880 stage,
+   so the composition scales as one picture instead of reflowing.
+   ========================================================================== */
+:root{
+  --u: calc(100vw / 1600);
+
+  /* abyss: every surface is the same near-black, tinted violet rather than
+     neutral — the difference between "dark theme" and "deep" */
+  --ink:        #07050D;
+  --ink-2:      #0C0816;
+  --ink-soft:   rgba(232,227,247,.60);
+  --ink-faint:  rgba(232,227,247,.40);
+  --rice:       #EDE9F8;
+  --accent:     #9A6BFF;
+  --accent-2:   #C9A8FF;
+  --accent-soft:rgba(154,107,255,.16);
+  --ember:      #E2794F;
+  --rule:       rgba(232,227,247,.055);
+
+  --card:       #EDE9F8;
+  --card-ink:   #171024;
+  --card-label: #9C93BC;
+  --panel:      rgba(237,233,248,.038);
+  --panel-line: rgba(237,233,248,.09);
+
+  --ease:     cubic-bezier(.22,.61,.36,1);
+  --ease-out: cubic-bezier(.16,1,.3,1);
+
+  --font: 'Inter Tight','Inter','Helvetica Neue','PingFang SC','HarmonyOS Sans SC',
+          'Source Han Sans SC','Microsoft YaHei',system-ui,sans-serif;
+
+  --gutter: clamp(20px, 5vw, 72px);
+  --maxw: 1240px;
+
+  /* form controls, scrollbars and the canvas backdrop all follow this */
+  color-scheme: dark;
+}
+@media (min-width:1900px){ :root{ --u: calc(1900px / 1600); } }
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+html{ background:var(--ink); scroll-behavior:smooth; scrollbar-color:rgba(154,107,255,.34) rgba(7,5,13,.9); }
+body{
+  font-family:var(--font);
+  font-weight:300;
+  color:var(--rice);
+  background:var(--ink);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; }
+::selection{ background:var(--accent); color:var(--rice); }
+
+/* ==========================================================================
+   1. hero shell
+   ========================================================================== */
+.hero{
+  position:relative;
+  width:100%;
+  height:100svh;
+  min-height:calc(880 * var(--u));
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(56% 46% at 20% 90%, rgba(154,107,255,.10) 0%, rgba(154,107,255,0) 70%),
+    radial-gradient(72% 66% at 86% 4%,  rgba(76,44,142,.40) 0%, rgba(76,44,142,.11) 46%, rgba(76,44,142,0) 78%),
+    radial-gradient(80% 60% at 50% 120%, rgba(120,80,220,.18) 0%, rgba(120,80,220,0) 68%),
+    var(--ink);
+}
+/* the floor of light the composition stands in, plus a terracotta bloom
+   sitting behind the mark — the single warm accent the whole page hangs on */
+.hero::after{
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(72% 44% at 50% 118%, rgba(178,146,255,.20) 0%, rgba(178,146,255,.075) 42%, rgba(178,146,255,.02) 72%, rgba(178,146,255,0) 88%),
+    linear-gradient(180deg, rgba(160,120,255,0) 56%, rgba(160,120,255,.02) 78%, rgba(160,120,255,.05) 100%);
+  pointer-events:none; z-index:0;
+  /* the floor light dies out before the hero's own edge, so the band below it
+     joins the hero on pure ground instead of on a lit strip */
+  -webkit-mask-image:linear-gradient(180deg, #000 86%, transparent 100%);
+          mask-image:linear-gradient(180deg, #000 86%, transparent 100%);
+}
+.hero::before{
+  content:'';
+  position:absolute; z-index:0;
+  left:calc(560 * var(--u)); top:calc(40 * var(--u));
+  width:calc(900 * var(--u)); height:calc(820 * var(--u));
+  background:radial-gradient(44% 44% at 52% 50%, rgba(154,107,255,.17) 0%, rgba(154,107,255,0) 70%);
+  pointer-events:none;
+}
+
+.stage{
+  position:absolute; left:50%; top:50%;
+  margin-left:calc(-800 * var(--u));
+  margin-top:calc(-440 * var(--u));
+  width:calc(1600 * var(--u));
+  height:calc(880 * var(--u));
+}
+
+/* ==========================================================================
+   2. dock — a floating capsule whose pills grow toward the pointer
+   ========================================================================== */
+.dock-wrap{
+  position:absolute; z-index:5;
+  top:calc(38 * var(--u)); left:0; right:0;
+  display:flex; justify-content:center;
+  pointer-events:none;
+}
+.dock{
+  position:relative;
+  pointer-events:auto;
+  display:flex; align-items:flex-start; gap:calc(3 * var(--u));
+  height:calc(46 * var(--u));
+  padding:calc(5 * var(--u));
+  border-radius:calc(14 * var(--u));
+  border:1px solid rgba(226,212,255,.13);
+  /* no backdrop-filter: it would re-sample and re-blur a canvas that
+     repaints every frame, and a translucent panel with a lit top edge reads
+     the same at this size for a fraction of the cost */
+  background:
+    linear-gradient(180deg, rgba(237,233,248,.07), rgba(237,233,248,0) 42%),
+    rgba(17,11,31,.76);
+  box-shadow:0 calc(8 * var(--u)) calc(22 * var(--u)) rgba(2,1,6,.55),
+             inset 0 1px rgba(237,233,248,.07);
+  isolation:isolate;
+}
+.dock-item{
+  position:relative; z-index:6;
+  display:inline-flex; align-items:center; justify-content:center;
+  flex:none;
+  height:calc(36 * var(--u));
+  gap:calc(8 * var(--u));
+  padding:0 calc(13 * var(--u));
+  transform-origin:50% 0;
+  border:1px solid transparent;
+  border-radius:calc(10 * var(--u));
+  background:rgba(247,244,239,.04);
+  color:var(--ink-faint);
+  text-decoration:none; cursor:pointer;
+  font-family:inherit;
+  font-size:calc(11 * var(--u)); font-weight:500;
+  letter-spacing:calc(1.5 * var(--u)); text-transform:uppercase;
+  white-space:nowrap;
+  will-change:width,height,transform;
+  transition:color .18s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+}
+.dock-item[data-near="true"]{
+  z-index:7;
+  color:var(--rice);
+  border-color:rgba(201,168,255,.26);
+  background:rgba(22,14,40,.95);
+  box-shadow:0 calc(7 * var(--u)) calc(16 * var(--u)) rgba(2,1,6,.52);
+}
+.dock-item .glyph{
+  width:calc(14 * var(--u)); height:calc(14 * var(--u)); flex:none;
+  opacity:.66; transition:opacity .18s var(--ease);
+}
+.dock-item .glyph svg{
+  display:block; width:100%; height:100%;
+  fill:none; stroke:currentColor; stroke-width:1.35;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.dock-item[data-near="true"] .glyph{ opacity:1; }
+
+/* the mark is the dock's anchor: the one opaque tile in a bar of glass */
+.dock-mark{
+  width:calc(36 * var(--u)); padding:0;
+  background:linear-gradient(158deg, #C9A8FF, #7A47E0 72%);
+  border-color:rgba(201,168,255,.55); color:#0A0614;
+  overflow:hidden;
+  box-shadow:0 0 calc(18 * var(--u)) rgba(154,107,255,.34);
+}
+.dock-mark svg{ width:58%; height:58%; display:block; fill:none; stroke:currentColor;
+                stroke-width:4; stroke-linecap:round; }
+.dock-mark[data-near="true"]{
+  background:linear-gradient(158deg, #E0CCFF, #8A55FF 72%);
+  border-color:rgba(226,212,255,.75); color:#0A0614;
+}
+
+.dock-item.is-active{
+  background:rgba(154,107,255,.20); border-color:rgba(154,107,255,.42); color:var(--rice);
+  box-shadow:0 calc(6 * var(--u)) calc(16 * var(--u)) rgba(2,1,6,.34),
+             inset 0 1px rgba(226,212,255,.14);
+}
+.dock-item.is-active .glyph{ opacity:1; }
+.dock-item--enter{ color:var(--accent-2); background:rgba(154,107,255,.16); border-color:rgba(154,107,255,.34); }
+
+/* specular rim — a conic gradient masked down to the border, its start angle
+   pointed at the pointer. This is what makes the glass read as a lit edge. */
+[data-spec]{ --spec-angle:2.4rad; --spec-bright:0; }
+[data-spec]::after{
+  content:''; position:absolute; inset:-1px; z-index:5;
+  padding:1px; border-radius:inherit; pointer-events:none;
+  opacity:var(--spec-bright);
+  background:conic-gradient(from var(--spec-angle) at 50% 50%,
+    rgba(226,212,255,0) 0deg, rgba(226,212,255,.08) 14deg, rgba(226,212,255,.94) 28deg,
+    rgba(226,212,255,.16) 46deg, rgba(226,212,255,0) 68deg, rgba(226,212,255,0) 180deg,
+    rgba(226,212,255,.08) 194deg, rgba(226,212,255,.94) 208deg, rgba(226,212,255,.16) 226deg,
+    rgba(226,212,255,0) 248deg, rgba(226,212,255,0) 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+}
+
+/* ==========================================================================
+   3. guides + ghost wordmark
+   ========================================================================== */
+.guides{ position:absolute; inset:calc(-40 * var(--u)) 0; z-index:1; pointer-events:none; }
+.guides i{
+  position:absolute; top:0; bottom:0; width:1px;
+  background:linear-gradient(180deg, rgba(247,244,239,0) 0%, var(--rule) 12%, var(--rule) 78%, rgba(247,244,239,0) 100%);
+}
+.ghost{
+  position:absolute; z-index:1;
+  left:calc(6 * var(--u)); bottom:calc(-64 * var(--u));
+  font-size:calc(172 * var(--u));
+  line-height:.78;
+  font-weight:400;
+  letter-spacing:calc(13 * var(--u));
+  color:rgba(232,227,247,.04);
+  white-space:nowrap; user-select:none; pointer-events:none;
+}
+/* the hero wordmark is not type: it is a field of dots sampled from the
+   letterforms, drifting through a noise current. Same word, but it costs no
+   font download and it moves. */
+.ghost-word{
+  position:absolute; z-index:1;
+  left:0; bottom:calc(10 * var(--u));
+  width:calc(1600 * var(--u)); height:calc(176 * var(--u));
+  pointer-events:none; user-select:none;
+}
+.ghost-word canvas{ width:100%; height:100%; display:block; }
+
+/* ==========================================================================
+   4. hero content
+   ========================================================================== */
+.mark-wrap{
+  position:absolute; z-index:2;
+  left:calc(668 * var(--u)); top:calc(38 * var(--u));
+  width:calc(900 * var(--u)); height:calc(804 * var(--u));
+  pointer-events:none;
+}
+.mark-wrap canvas{ width:100%; height:100%; display:block; }
+
+.headline{
+  position:absolute; z-index:4;
+  left:calc(46 * var(--u)); top:calc(224 * var(--u));
+  font-size:calc(64 * var(--u)); line-height:calc(74 * var(--u));
+  font-weight:350; letter-spacing:calc(-0.6 * var(--u));
+  color:var(--rice);
+}
+.headline span{ display:block; padding-bottom:.04em; }
+.headline span i{ display:inline-block; font-style:normal; }
+.headline .accent{ color:var(--accent); }
+
+.lede{
+  position:absolute; z-index:4;
+  left:calc(50 * var(--u)); top:calc(420 * var(--u));
+  width:calc(340 * var(--u));
+  font-size:calc(16.5 * var(--u)); line-height:calc(24 * var(--u));
+  font-weight:300; color:var(--ink-soft);
+}
+
+/* ---- primary call to action: the liquid-metal pill ---------------------- */
+.cta{
+  position:absolute; z-index:4;
+  left:calc(46 * var(--u)); top:calc(536 * var(--u));
+  display:inline-flex; align-items:center; gap:calc(14 * var(--u));
+  height:calc(62 * var(--u));
+  padding:0 calc(30 * var(--u)) 0 calc(26 * var(--u));
+  border-radius:999px;
+  background:#160E29;
+  color:var(--rice);
+  text-decoration:none;
+  font-size:calc(14 * var(--u)); font-weight:500;
+  letter-spacing:calc(.4 * var(--u));
+  overflow:hidden;
+  isolation:isolate;
+  box-shadow:
+    0 calc(6 * var(--u)) calc(14 * var(--u)) rgba(0,0,0,.50),
+    0 calc(18 * var(--u)) calc(40 * var(--u)) rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(226,212,255,.14);
+  transition:box-shadow .45s var(--ease), transform .45s var(--ease-out);
+}
+.cta canvas{
+  position:absolute; inset:0; z-index:0;
+  width:100%; height:100%; display:block;
+  pointer-events:none;
+  opacity:0; transition:opacity .5s var(--ease);
+}
+.cta[data-fx="on"] canvas{ opacity:1; }
+.cta .cta-lbl{ position:relative; z-index:2; transform:translateY(calc(.5 * var(--u))); }
+.cta .cta-ico{
+  position:relative; z-index:2;
+  width:calc(15 * var(--u)); height:calc(15 * var(--u));
+  fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+  transition:transform .5s var(--ease-out);
+}
+.cta:hover{ transform:translateY(calc(-2 * var(--u))); }
+.cta:hover .cta-ico{ transform:translateX(calc(4 * var(--u))); }
+.cta:hover,
+.cta:focus-visible{
+  box-shadow:
+    0 calc(8 * var(--u)) calc(20 * var(--u)) rgba(0,0,0,.48),
+    0 calc(26 * var(--u)) calc(56 * var(--u)) rgba(0,0,0,.38),
+    0 0 calc(44 * var(--u)) rgba(154,107,255,.34),
+    inset 0 1px 0 rgba(226,212,255,.22);
+}
+/* if WebGL2 is unavailable the canvas stays hidden and the pill still reads */
+.cta[data-fx="off"]{
+  background:
+    radial-gradient(120% 180% at 20% 10%, rgba(226,212,255,.20), rgba(226,212,255,0) 60%),
+    linear-gradient(120deg, #1B1030 0%, #43277A 46%, #120C22 100%);
+}
+
+/* ---- two quiet figures, set like a caption ---------------------------- */
+.stat-row{ position:absolute; z-index:4; left:calc(46 * var(--u)); top:calc(658 * var(--u)); display:flex; gap:calc(56 * var(--u)); }
+.stat{ display:flex; align-items:flex-start; gap:calc(9 * var(--u)); }
+.stat .mark{ width:calc(30 * var(--u)); height:calc(30 * var(--u)); flex:none; margin-top:calc(1 * var(--u)); color:rgba(201,168,255,.38); }
+.stat .mark svg{ width:100%; height:100%; display:block; }
+.stat dt{ font-size:calc(12.5 * var(--u)); font-weight:300; color:var(--ink-soft); line-height:calc(18 * var(--u)); letter-spacing:.02em; }
+.stat dd{ font-size:calc(13.5 * var(--u)); font-weight:600; color:var(--rice); line-height:calc(21 * var(--u)); }
+.stat dt,.stat dd{ text-shadow:0 calc(2 * var(--u)) calc(16 * var(--u)) rgba(6,5,4,.6); }
+
+/* ---- scroll cue ------------------------------------------------------ */
+.scroll{
+  position:absolute; z-index:4;
+  left:calc(1496 * var(--u)); top:calc(626 * var(--u));
+  display:flex; align-items:center; gap:calc(10 * var(--u));
+  writing-mode:vertical-rl;
+  font-size:calc(10.5 * var(--u)); font-weight:400;
+  letter-spacing:calc(4 * var(--u));
+  color:rgba(247,244,239,.46);
+  text-transform:uppercase; text-decoration:none;
+}
+.scroll .track{ position:relative; width:1px; height:calc(56 * var(--u)); background:rgba(247,244,239,.16); overflow:hidden; }
+.scroll .track::after{
+  content:''; position:absolute; inset:0 0 auto; height:40%;
+  background:rgba(247,244,239,.72);
+  animation:trickle 2.6s var(--ease) infinite;
+}
+@keyframes trickle{
+  0%   { transform:translateY(-105%); opacity:0; }
+  22%  { opacity:1; }
+  78%  { opacity:1; }
+  100% { transform:translateY(255%); opacity:0; }
+}
+
+/* ==========================================================================
+   5. entrance — everything is wiped in behind a mask
+   Transform is reserved for the pointer parallax, so the reveal uses
+   clip-path. Once the intro is done .intro-done drops the clips entirely:
+   a live clip-path keeps a stacking context alive and would trap children.
+   ========================================================================== */
+:root{ --mr:0px; }
+.js .mask{ clip-path:inset(100% 0 0 0 round var(--mr,0px)); }
+.is-ready .mask{
+  clip-path:inset(0 0 0 0 round var(--mr,0px));
+  transition:clip-path 1.05s var(--ease-out) var(--d,0ms);
+}
+.js .mask-circle{ clip-path:circle(0% at 50% 50%); }
+.is-ready .mask-circle{
+  clip-path:circle(76% at 50% 50%);
+  transition:clip-path 1.1s var(--ease-out) var(--d,0ms);
+}
+.js .fade{ opacity:0; }
+.is-ready .fade{ opacity:1; transition:opacity 1.3s var(--ease) var(--d,0ms); }
+.js .rise{ opacity:0; transform:translateY(calc(16 * var(--u))); }
+.is-ready .rise{
+  opacity:1; transform:none;
+  transition:opacity 1.05s var(--ease) var(--d,0ms), transform 1.25s var(--ease-out) var(--d,0ms);
+}
+.intro-done .mask,.intro-done .mask-circle{ clip-path:none; transition:none; }
+
+.card{ --mr:calc(46 * var(--u)); }
+
+.js .dock{ opacity:0; }
+.is-ready .dock{ opacity:1; transition:opacity .8s var(--ease) 80ms; }
+.js .dock-item{ clip-path:inset(0 0 105% 0); }
+.is-ready .dock-item{
+  clip-path:inset(0 0 -30% 0);
+  transition:clip-path .9s var(--ease-out) var(--d,0ms),
+             color .18s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+}
+.intro-done .dock-item{ clip-path:none; }
+
+/* the mark draws itself in: a soft radial wipe from the middle outward */
+.js .mark-wrap{ opacity:0; transform:scale(.94); }
+.is-ready .mark-wrap{
+  opacity:1; transform:none;
+  transition:opacity 1.6s var(--ease) 240ms, transform 1.9s var(--ease-out) 240ms;
+}
+
+/* ==========================================================================
+   6. pointer parallax
+   --px / --py are written on .hero once per frame (-1..1). Each layer
+   declares how far it rides (--pd) and how much it turns (--pr).
+   ========================================================================== */
+.par{
+  transform:
+    perspective(1400px)
+    translate3d(calc(var(--px,0) * var(--pd,0) * -1px),
+                calc(var(--py,0) * var(--pd,0) * -0.62px),
+                0)
+    rotateY(calc(var(--px,0) * var(--pr,0) * 1deg))
+    rotateX(calc(var(--py,0) * var(--pr,0) * -0.7deg));
+}
+
+/* ==========================================================================
+   7. sections below the fold — normal flow, clamp-based type
+   ========================================================================== */
+/* the ribbon of plates between the hero and the works: full-bleed, masked at
+   every edge so it dissolves into the ground instead of sitting in a box */
+.gallery-band{
+  position:relative;
+  height:clamp(300px, 46vh, 470px);
+  overflow:hidden;
+  background:var(--ink);
+  -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
+          mask-image:linear-gradient(90deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
+}
+.gallery-band::before{
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(58% 122% at 50% 50%, rgba(154,107,255,.12) 0%, rgba(154,107,255,0) 74%);
+  pointer-events:none;
+}
+.gallery-band canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.gallery-band + .section{ border-top:0; }
+
+.section{
+  position:relative; padding:clamp(72px,11vw,150px) 0;
+  background:
+    radial-gradient(90% 62% at 50% -14%, rgba(154,107,255,.06) 0%, rgba(154,107,255,0) 62%),
+    var(--ink);
+  color:var(--rice);
+  border-top:1px solid var(--rule);
+}
+.section--dark{
+  background:
+    radial-gradient(70% 58% at 14% 0%, rgba(96,58,178,.22) 0%, rgba(96,58,178,0) 66%),
+    radial-gradient(60% 50% at 92% 102%, rgba(154,107,255,.09) 0%, rgba(154,107,255,0) 70%),
+    var(--ink-2);
+}
+.wrap{ width:100%; max-width:var(--maxw); margin:0 auto; padding:0 var(--gutter); }
+
+.sec-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; margin-bottom:clamp(32px,4vw,56px); }
+.sec-head .label{
+  font-size:12px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:14px;
+}
+.sec-head h2{
+  font-size:clamp(26px,3.4vw,44px); line-height:1.18; font-weight:400; letter-spacing:-.02em;
+  max-width:20em;
+}
+.sec-head .lead{ margin-top:14px; font-size:15.5px; line-height:1.7; color:var(--ink-soft); max-width:34em; }
+.sec-more{
+  font-size:13.5px; font-weight:500; letter-spacing:.02em; text-decoration:none;
+  color:var(--rice); padding-bottom:3px; border-bottom:1px solid rgba(226,212,255,.22);
+  transition:border-color .3s var(--ease), color .3s var(--ease); white-space:nowrap;
+}
+.sec-more:hover{ color:var(--accent); border-color:var(--accent); }
+
+/* ---- works: paper cards with a window cut in them --------------------- */
+.works-grid{
+  display:grid; gap:clamp(16px,2vw,24px);
+  grid-template-columns:repeat(3,1fr);
+}
+.work{ position:relative; }
+.work-link{
+  position:relative; display:block; text-decoration:none;
+  background:
+    linear-gradient(180deg, rgba(237,233,248,.065), rgba(237,233,248,.014) 46%, rgba(237,233,248,.006)),
+    var(--ink-2);
+  border-radius:clamp(22px,2.4vw,30px);
+  padding:14px 14px 22px;
+  border:1px solid var(--panel-line);
+  box-shadow:inset 0 1px 0 rgba(237,233,248,.05), 0 20px 46px -28px rgba(0,0,0,.92);
+  transition:box-shadow .55s var(--ease), transform .55s var(--ease-out), border-color .4s var(--ease);
+  height:100%;
+}
+.work-link:hover{
+  transform:translateY(-5px);
+  border-color:rgba(154,107,255,.32);
+  box-shadow:inset 0 1px 0 rgba(237,233,248,.09),
+             0 30px 64px -30px rgba(0,0,0,.96),
+             0 0 58px -22px rgba(154,107,255,.46);
+}
+.portal{
+  position:relative; border-radius:clamp(14px,1.6vw,20px);
+  overflow:hidden; isolation:isolate;
+  aspect-ratio:4/3; background:#0A0613;
+}
+.portal-media{
+  position:absolute; inset:-9px; z-index:1; display:block;
+  will-change:transform;
+  transform:
+    perspective(900px)
+    translate3d(0,0,0)
+    rotateY(0deg) rotateX(0deg);
+  transform-origin:50% 50%;
+  transition:transform .7s var(--ease);
+}
+.portal-media img{ width:100%; height:100%; object-fit:cover; transform:scale(1.06);
+  filter:saturate(.94) contrast(1.03);
+  transition:transform 1.25s var(--ease-out), filter .8s var(--ease); }
+.work-link:hover .portal-media img{ transform:scale(1.11); filter:saturate(1.04) contrast(1.04); }
+/* no photograph yet: a plate made of the brand itself, so the frame never
+   reads as a broken image while the copy is still being written */
+.portal.is-plate .portal-media{
+  background:
+    radial-gradient(120% 130% at 18% 12%, rgba(201,168,255,.26), rgba(201,168,255,0) 55%),
+    radial-gradient(90% 100% at 82% 88%, rgba(122,71,224,.58), rgba(122,71,224,0) 62%),
+    linear-gradient(150deg, #17102B 0%, #2C1852 58%, #0A0614 100%);
+}
+.portal.is-plate .portal-media::after{
+  content:''; position:absolute; inset:0;
+  background:
+    repeating-linear-gradient(115deg, rgba(201,168,255,.07) 0 1px, rgba(201,168,255,0) 1px 7px);
+  mix-blend-mode:screen; opacity:.55;
+}
+.portal.is-plate .plate-mark{
+  position:absolute; inset:0; margin:auto;
+  width:52%; height:52%; display:block;
+  filter:drop-shadow(0 0 24px rgba(201,168,255,.22));
+  transition:transform 1.2s var(--ease-out);
+}
+.work-link:hover .portal.is-plate .plate-mark{ transform:rotate(12deg) scale(1.04); }
+.pixel-reveal{
+  position:absolute; inset:0; z-index:3; width:100%; height:100%;
+  pointer-events:none; opacity:0; mix-blend-mode:screen;
+}
+/* the white scan rides the clip edge — its travel is the media box, not the
+   figure's, because .portal-media is overscanned by 9px on every side */
+.portal::after{
+  content:''; position:absolute; z-index:2;
+  filter:blur(2px); opacity:0; pointer-events:none;
+  top:0; bottom:0; width:26%; left:calc(-13% - 9px);
+  background:linear-gradient(90deg,transparent,rgba(201,168,255,.22) 42%,rgba(236,226,255,.82) 54%,transparent);
+}
+.js .portal-media{ clip-path:inset(0 100% 0 0 round 12px); }
+.portal.is-live .portal-media{ animation:portal-cut 1.35s steps(12,end) both; }
+.portal.is-live::after{ animation:portal-scan 1.35s steps(12,end) both; }
+.intro-done .portal-media{ clip-path:none; animation:none; }
+@keyframes portal-cut{
+  from{ clip-path:inset(0 100% 0 0 round 12px); }
+  to  { clip-path:inset(0 0 0 0 round 12px); }
+}
+@keyframes portal-scan{
+  0%  { left:calc(-13% - 9px); opacity:0; }
+  10% { opacity:.7; }
+  88% { opacity:.5; }
+  100%{ left:calc(87% + 9px); opacity:0; }
+}
+
+.work-meta{ padding:20px 10px 0; }
+.work-meta .label{
+  font-size:11.5px; font-weight:500; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--card-label);
+}
+.work-meta h3{
+  margin-top:9px; font-size:clamp(18px,1.7vw,22px); line-height:1.3;
+  font-weight:500; letter-spacing:-.01em; color:var(--rice);
+}
+.work-meta p.desc{ margin-top:8px; font-size:14px; line-height:1.65; color:var(--ink-soft); }
+/* the knob sits on the plate, not on the copy — a 38px disc parked over a
+   two-line description is the fastest way to make a card look unbalanced */
+.knob{
+  position:absolute; z-index:4; right:14px; bottom:14px;
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(10,6,20,.66); color:var(--rice);
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px);
+  display:grid; place-items:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.38);
+  transition:transform .5s var(--ease-out), background .4s var(--ease);
+}
+.knob svg{ width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.work-link:hover .knob{ transform:scale(1.08); background:var(--accent); }
+
+/* ---- notes: a list, nothing else -------------------------------------- */
+.notes-list{ border-top:1px solid var(--panel-line); }
+.note-row{
+  display:grid; grid-template-columns:96px 1fr 24px; align-items:baseline; gap:20px;
+  padding:22px 4px; border-bottom:1px solid var(--panel-line);
+  text-decoration:none; color:var(--rice);
+  transition:padding .4s var(--ease), background .4s var(--ease);
+}
+.note-row:hover{ padding-left:14px; background:rgba(237,233,248,.035); }
+.note-row time{ font-size:12.5px; letter-spacing:.08em; color:var(--card-label); font-variant-numeric:tabular-nums; }
+.note-row .t{ font-size:clamp(16px,1.5vw,19px); font-weight:400; letter-spacing:-.01em; }
+.note-row .a{ justify-self:end; font-size:15px; color:var(--card-label); transition:transform .4s var(--ease-out), color .3s var(--ease); }
+.note-row:hover .a{ transform:translateX(4px); color:var(--accent); }
+.section--dark .notes-list{ border-top-color:rgba(247,244,239,.14); }
+.section--dark .note-row{ border-bottom-color:rgba(247,244,239,.10); color:var(--rice); }
+.section--dark .note-row:hover{ background:rgba(247,244,239,.04); }
+
+/* ---- closing: one line, one way out ----------------------------------- */
+.closing{ text-align:left; }
+.closing-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px, 380px);
+  gap:clamp(40px, 6vw, 88px);
+  align-items:center;
+}
+.closing h2{
+  font-size:clamp(28px,4.2vw,56px); line-height:1.2; font-weight:350; letter-spacing:-.025em;
+  max-width:22em;
+}
+.closing p{ margin-top:18px; font-size:15.5px; line-height:1.7; color:var(--ink-soft); max-width:32em; }
+.closing .cta{ position:static; margin-top:34px; display:inline-flex; }
+.closing .cta .cta-lbl{ transform:none; }
+
+/* the plate of type: it is the mark until it is clicked, then it is a word */
+.morph{
+  position:relative; display:block; margin:0;
+  width:100%; aspect-ratio:1/1;
+  cursor:pointer; outline:none;
+  border-radius:calc(28 * var(--u));
+  background:radial-gradient(closest-side, rgba(154,107,255,.13) 0%, rgba(154,107,255,.035) 58%, rgba(154,107,255,0) 78%);
+  -webkit-tap-highlight-color:transparent;
+}
+.morph canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.morph-hint{
+  position:absolute; left:0; right:0; bottom:-26px; text-align:center;
+  font-size:10.5px; font-weight:500; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--accent-2); opacity:.5;
+  transition:opacity .6s var(--ease);
+}
+.morph[data-seen="1"] .morph-hint{ opacity:0; }
+.morph:hover .morph-hint{ opacity:.85; }
+.morph[data-seen="1"]:hover .morph-hint{ opacity:0; }
+.morph:focus-visible{ box-shadow:0 0 0 2px rgba(201,168,255,.55); }
+
+/* ---- inner page header ------------------------------------------------ */
+.page-head{
+  position:relative; overflow:hidden; isolation:isolate;
+  padding:calc(150px + 40px) 0 clamp(48px,7vw,90px);
+  background:
+    radial-gradient(70% 60% at 84% 0%, rgba(154,107,255,.17) 0%, rgba(154,107,255,0) 62%),
+    radial-gradient(60% 44% at 20% 8%, rgba(201,168,255,.055) 0%, rgba(201,168,255,0) 70%),
+    linear-gradient(180deg, rgba(7,5,13,0) 46%, rgba(7,5,13,.9) 100%),
+    var(--ink);
+}
+.page-head .label{
+  font-size:12px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent);
+  margin-bottom:18px;
+}
+.page-head h1{
+  font-size:clamp(34px,5vw,64px); line-height:1.12; font-weight:350; letter-spacing:-.025em;
+  max-width:18em;
+}
+.page-head .lead{ margin-top:20px; font-size:16px; line-height:1.72; color:var(--ink-soft); max-width:34em; }
+.page-head .ghost{ bottom:calc(-30 * var(--u) - 40px); font-size:calc(220 * var(--u)); opacity:.7; }
+
+/* ---- about ------------------------------------------------------------ */
+.about-grid{ display:grid; grid-template-columns:minmax(0,1.45fr) minmax(0,1fr); gap:clamp(32px,6vw,96px); }
+.about-body p{ font-size:clamp(15.5px,1.5vw,17.5px); line-height:1.85; color:var(--ink-soft); }
+.about-body p + p{ margin-top:1.3em; }
+.facts{ list-style:none; border-top:1px solid var(--panel-line); }
+.facts li{ display:flex; justify-content:space-between; gap:20px; padding:16px 2px; border-bottom:1px solid var(--panel-line); font-size:14.5px; }
+.facts dt{ color:var(--card-label); }
+.facts dd{ font-weight:500; color:var(--rice); }
+.contact-block{ margin-top:44px; }
+
+/* ---- footer ----------------------------------------------------------- */
+.footer{
+  background:var(--ink); color:var(--ink-faint);
+  padding:clamp(48px,7vw,84px) 0 40px;
+  border-top:1px solid rgba(247,244,239,.07);
+}
+.footer-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:40px; flex-wrap:wrap; }
+.footer .brandline{ display:flex; align-items:center; gap:14px; color:var(--rice); }
+.footer .brandline svg{ width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:4; stroke-linecap:round; }
+.footer .brandline .wm{ font-size:14px; font-weight:500; letter-spacing:.24em; text-transform:uppercase; }
+.footer nav{ display:flex; gap:26px; flex-wrap:wrap; }
+.footer nav a{ font-size:13.5px; text-decoration:none; color:var(--ink-soft); transition:color .3s var(--ease); }
+.footer nav a:hover{ color:var(--accent); }
+.footer-bottom{
+  margin-top:clamp(36px,5vw,64px); padding-top:22px;
+  border-top:1px solid rgba(247,244,239,.07);
+  display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  font-size:12.5px; line-height:1.6;
+}
+
+/* ---- keyboard focus --------------------------------------------------- */
+a:focus-visible, button:focus-visible{
+  outline:2px solid rgba(247,244,239,.85); outline-offset:4px; border-radius:8px;
+}
+.section a:focus-visible, .footer a:focus-visible, .section--dark a:focus-visible{ outline-color:rgba(201,168,255,.9); }
+
+/* ==========================================================================
+   8. reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion:reduce){
+  .mask,.mask-circle,.fade,#scene,.dock,.dock-item,.headline span i,.mark-wrap{
+    opacity:1 !important; clip-path:none !important; transform:none !important; transition:none !important;
+  }
+  .par{ transform:none !important; }
+  .portal-media{ clip-path:none !important; animation:none !important; }
+  .pixel-reveal,.portal::after{ display:none !important; }
+  .scroll .track::after{ animation:none; }
+  html{ scroll-behavior:auto; }
+}
+
+/* ==========================================================================
+   9. narrow screens — one column, the mark becomes a band between the copy
+      and the figures
+   ========================================================================== */
+@media (max-width:900px){
+  :root{ --u: calc(100vw / 760); }
+  .hero{ height:auto; min-height:100svh; }
+  .stage{
+    position:relative; left:auto; top:auto; margin:0;
+    width:100%; height:calc(1560 * var(--u));
+    /* a phone viewport is usually taller than 1560u, and without this the
+       wordmark band floats above the bottom of the hero */
+    min-height:100svh;
+  }
+  .hero::after{
+    background:
+      radial-gradient(90% 26% at 50% 40%, rgba(178,146,255,.26) 0%, rgba(178,146,255,.11) 46%, rgba(178,146,255,0) 82%),
+      linear-gradient(180deg, rgba(178,146,255,0) 62%, rgba(178,146,255,.05) 100%);
+  }
+  .hero::before{ left:calc(-140 * var(--u)); top:calc(320 * var(--u)); width:calc(1040 * var(--u)); height:calc(760 * var(--u)); }
+  .guides i:nth-child(2){ display:none; }
+  .guides i:nth-child(1){ left:calc(253 * var(--u)) !important; }
+  .guides i:nth-child(3){ left:calc(506 * var(--u)) !important; }
+
+  /* one column: labels come off the dock and it keeps only its glyphs,
+     because at this scale the type would be four pixels tall */
+  .dock-wrap{ top:calc(30 * var(--u)); }
+  .dock{
+    height:max(56px, calc(58 * var(--u)));
+    padding:max(6px, calc(6 * var(--u)));
+    gap:max(4px, calc(4 * var(--u)));
+    border-radius:max(17px, calc(18 * var(--u)));
+  }
+  .dock-item{
+    height:max(44px, calc(46 * var(--u)));
+    width:max(44px, calc(46 * var(--u)));
+    padding:0; border-radius:max(12px, calc(13 * var(--u)));
+  }
+  .dock-item span:not(.glyph){ display:none; }
+  .dock-item .glyph{ width:max(19px, calc(20 * var(--u))); height:max(19px, calc(20 * var(--u))); }
+  .dock-mark svg{ width:52%; height:52%; }
+
+  .headline{ left:calc(34 * var(--u)); top:calc(168 * var(--u)); font-size:calc(56 * var(--u)); line-height:calc(66 * var(--u)); }
+  .lede{ left:calc(36 * var(--u)); top:calc(322 * var(--u)); width:calc(420 * var(--u)); font-size:calc(19 * var(--u)); line-height:calc(28 * var(--u)); }
+  .cta{ left:calc(34 * var(--u)); top:calc(456 * var(--u)); height:max(54px, calc(66 * var(--u))); padding:0 max(22px, calc(28 * var(--u))) 0 max(20px, calc(24 * var(--u))); gap:calc(12 * var(--u)); font-size:max(13px, calc(15 * var(--u))); }
+
+  .mark-wrap{ left:calc(-70 * var(--u)); top:calc(600 * var(--u)); width:calc(900 * var(--u)); height:calc(820 * var(--u)); }
+  .stat-row{ left:calc(34 * var(--u)); top:calc(1312 * var(--u)); gap:calc(40 * var(--u)); }
+  .stat .mark{ width:calc(34 * var(--u)); height:calc(34 * var(--u)); }
+  .stat dt{ font-size:calc(15 * var(--u)); line-height:calc(21 * var(--u)); }
+  .stat dd{ font-size:calc(16 * var(--u)); line-height:calc(24 * var(--u)); }
+  .scroll{ display:none; }
+  .ghost{ font-size:calc(96 * var(--u)); letter-spacing:calc(7 * var(--u)); bottom:calc(-14 * var(--u)); left:calc(-6 * var(--u)); }
+  .ghost-word{ width:100%; left:0; height:calc(126 * var(--u)); bottom:calc(26 * var(--u)); }
+
+  .works-grid{ grid-template-columns:1fr; }
+  .gallery-band{ height:clamp(220px, 30vh, 330px); }
+  .about-grid{ grid-template-columns:1fr; }
+  .closing-grid{ grid-template-columns:1fr; gap:44px; }
+  .morph{ max-width:340px; margin:0 auto; }
+  .note-row{ grid-template-columns:72px 1fr 18px; gap:14px; }
+  .work-link{ padding:12px 12px 20px; }
+  .knob{ right:18px; bottom:18px; }
+  .page-head{ padding-top:calc(120px + 24px); }
+  .footer nav{ gap:18px; }
+}
+
+/* ==========================================================================
+   10. pieces that only exist once the copy is in place
+   ========================================================================== */
+.eyebrow{
+  position:absolute; z-index:4;
+  left:calc(50 * var(--u)); top:calc(176 * var(--u));
+  font-size:calc(11.5 * var(--u)); font-weight:500;
+  letter-spacing:calc(1.8 * var(--u)); text-transform:uppercase;
+  color:var(--accent);
+}
+.eyebrow:empty{ display:none; }
+
+/* the ghost wordmark on an inner page is a watermark in the corner, not the
+   foundation the hero stands on */
+.page-head .ghost{
+  left:auto; right:calc(-2 * var(--u)); bottom:calc(-16 * var(--u));
+  font-size:clamp(52px, 8.6vw, 128px);
+  letter-spacing:.04em;
+  color:rgba(201,168,255,.042);
+}
+
+.facts li span{ color:var(--card-label); }
+.facts li b{ font-weight:500; color:var(--rice); }
+
+/* if content.json cannot be read the page still renders — it just says so */
+.content-error{
+  position:fixed; z-index:99; left:50%; bottom:24px; transform:translateX(-50%);
+  max-width:min(560px, calc(100vw - 32px));
+  padding:14px 18px; border-radius:12px;
+  background:#160E28; color:#EDE9F8;
+  font-size:13.5px; line-height:1.65;
+  box-shadow:0 18px 40px rgba(0,0,0,.55);
+  border:1px solid rgba(154,107,255,.5);
+}
+.content-error b{ color:var(--accent-2); font-weight:600; }
+.content-error code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  background:rgba(255,255,255,.09); padding:1px 5px; border-radius:4px;
+}
+
+@media (max-width:900px){
+  .eyebrow{ display:none; }
+}

@@ -1,67 +1,247 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="LiYuuzz 的数字基因实验室：由粒子双螺旋导航的 3D 个人空间。" />
-    <meta name="theme-color" content="#060708" />
-    <title>LiYuuzz · EIVETHEORY</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23060708'/%3E%3Ccircle cx='24' cy='32' r='6' fill='%234fd8e8'/%3E%3Ccircle cx='40' cy='32' r='6' fill='%23ff6b5e'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./css/main.css" />
-  </head>
-  <body>
-    <a class="skip-link" href="#about">跳到内容</a>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-c="site.title">〔站点名〕</title>
+<meta name="description" content="〔一句话站点描述〕" data-c-attr="content:site.desc">
+<meta name="theme-color" content="#07050D">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<script>document.documentElement.className += " js";</script>
+</head>
+<body>
 
-    <main class="stage" id="main">
-      <canvas class="field" id="field" aria-hidden="true"></canvas>
+<!-- the mark: a twelve-ray star with one ray missing, and the piece that left -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute;pointer-events:none">
+  <defs>
+    <symbol id="mark" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round">
+        <line x1="32" y1="6" x2="32" y2="24"/>
+        <line x1="32" y1="6" x2="32" y2="24" transform="rotate(60 32 32)"/>
+        <line x1="32" y1="6" x2="32" y2="24" transform="rotate(120 32 32)"/>
+        <line x1="32" y1="6" x2="32" y2="24" transform="rotate(180 32 32)"/>
+        <line x1="32" y1="6" x2="32" y2="24" transform="rotate(240 32 32)"/>
+        <line x1="32" y1="6" x2="32" y2="24" transform="rotate(300 32 32)"/>
+        <line x1="32" y1="15" x2="32" y2="24" transform="rotate(30 32 32)"/>
+        <line x1="32" y1="15" x2="32" y2="24" transform="rotate(150 32 32)"/>
+        <line x1="32" y1="15" x2="32" y2="24" transform="rotate(210 32 32)"/>
+        <line x1="32" y1="15" x2="32" y2="24" transform="rotate(270 32 32)"/>
+        <line x1="32" y1="15" x2="32" y2="24" transform="rotate(330 32 32)"/>
+      </g>
+      <circle cx="53" cy="32" r="2.9" fill="currentColor"/>
+    </symbol>
+    <symbol id="markSmall" viewBox="0 0 64 64">
+      <g fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round">
+        <line x1="32" y1="12" x2="32" y2="24"/>
+        <line x1="32" y1="12" x2="32" y2="24" transform="rotate(60 32 32)"/>
+        <line x1="32" y1="12" x2="32" y2="24" transform="rotate(120 32 32)"/>
+        <line x1="32" y1="12" x2="32" y2="24" transform="rotate(180 32 32)"/>
+        <line x1="32" y1="12" x2="32" y2="24" transform="rotate(240 32 32)"/>
+        <line x1="32" y1="12" x2="32" y2="24" transform="rotate(300 32 32)"/>
+      </g>
+      <circle cx="52" cy="32" r="3.6" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
 
-      <div class="scene" id="scene">
-        <div class="world" id="world">
-          <div class="world__rot" id="worldRot"></div>
-        </div>
-      </div>
-
-      <div class="tint" id="tint" aria-hidden="true"></div>
-      <div class="wash" aria-hidden="true"></div>
-      <div class="grain" aria-hidden="true"></div>
-    </main>
-
-    <!-- DNA 双螺旋目录：粒子构成的主链 + 四个功能碱基节点 -->
-    <aside class="helix" aria-label="DNA 目录导航">
-      <canvas id="helix"></canvas>
-      <span class="helix__caption">SEQUENCE · 04</span>
-    </aside>
-
-    <header class="hud hud--top">
-      <a class="brand" href="#home" data-nav="0">
-        <span class="brand__name">LIYUUZZ</span>
-        <span class="brand__role">EIVETHEORY&nbsp;LAB</span>
+<div class="hero" id="hero">
+  <div class="dock-wrap">
+    <nav class="dock par-dock" style="--pd:5" data-spec aria-label="主导航">
+      <a class="dock-item dock-mark" data-dock data-spec href="index.html" style="--d:120ms" aria-label="回到首页">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#markSmall"/></svg>
       </a>
-      <div class="readout">
-        <span class="readout__item"><i>DEPTH</i><b id="depth">0000</b></span>
-        <span class="readout__item"><i>VEL</i><b id="vel">0.00</b></span>
-      </div>
-    </header>
+      <a class="dock-item is-active" data-dock data-spec href="index.html" style="--d:180ms">
+        <span class="glyph" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M2.4 7.2 8 2.6l5.6 4.6"/><path d="M4 7.6v6h8v-6"/></svg></span>
+        <span data-c="nav.home">首页</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="works.html" style="--d:230ms">
+        <span class="glyph" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="2.4" y="2.4" width="4.9" height="4.9" rx="1.1"/><rect x="8.7" y="2.4" width="4.9" height="4.9" rx="1.1"/><rect x="2.4" y="8.7" width="4.9" height="4.9" rx="1.1"/><rect x="8.7" y="8.7" width="4.9" height="4.9" rx="1.1"/></svg></span>
+        <span data-c="nav.works">作品</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="notes.html" style="--d:280ms">
+        <span class="glyph" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 2.6h5.4L12.4 5.6v7.8H4z"/><path d="M9.3 2.6v3h3"/><path d="M6 8.4h4M6 10.8h2.6"/></svg></span>
+        <span data-c="nav.notes">笔记</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="about.html" style="--d:330ms">
+        <span class="glyph" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="8" cy="5.4" r="2.6"/><path d="M3.2 13.4c.6-2.6 2.5-4 4.8-4s4.2 1.4 4.8 4"/></svg></span>
+        <span data-c="nav.about">关于</span>
+      </a>
+      <a class="dock-item dock-item--enter" data-dock data-spec href="#closing" style="--d:380ms">
+        <span class="glyph" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M6.6 2.6h5.1a1 1 0 0 1 1 1v8.8a1 1 0 0 1-1 1H6.6"/><path d="M2.6 8h6.4"/><path d="m7 5.7 2.3 2.3L7 10.3"/></svg></span>
+        <span data-c="nav.enter">联系</span>
+      </a>
+    </nav>
+  </div>
 
-    <footer class="hud hud--bottom">
-      <p class="hint" id="hint"><span class="hint__k">滚轮 / 滑动</span>穿越空间</p>
+  <div class="stage" id="stage">
 
-      <div class="scale" aria-hidden="true">
-        <span class="scale__track"><i class="scale__mark" id="scaleMark"></i></span>
-        <span class="scale__labels"><b>0000</b><b>1560</b><b>3120</b><b>4680</b></span>
-      </div>
-
-      <p class="counter" id="counter">01 / 04</p>
-    </footer>
-
-    <div class="gate" id="eyeGate" aria-hidden="true">
-      <div class="gate__black"></div>
-      <div class="gate__stage">
-        <canvas id="eyeCanvas"></canvas>
-        <span class="gate__hint">CLICK TO SKIP</span>
-      </div>
+    <div class="guides fade" style="--d:900ms" aria-hidden="true">
+      <i style="left:calc(405 * var(--u))"></i>
+      <i style="left:calc(748 * var(--u))"></i>
+      <i style="left:calc(1091 * var(--u))"></i>
     </div>
 
-    <script type="module" src="./js/main.js"></script>
-  </body>
+    <!-- the wordmark is not type: it is a grid of dots sampled from the
+         letterforms and blown through by a travelling squall -->
+    <div class="ghost-word fade" style="--d:1150ms" aria-hidden="true">
+      <canvas id="wordCanvas"></canvas>
+      <span class="ghost-text" data-c="site.wordmark" hidden>Profunfis</span>
+    </div>
+
+    <div class="mark-wrap" style="--pd:12; --pr:1.6" aria-hidden="true">
+      <canvas id="markCanvas"></canvas>
+    </div>
+
+    <p class="eyebrow fade" style="--d:200ms" data-c="hero.eyebrow">〔栏目标签〕</p>
+
+    <h1 class="headline" style="--pd:18; --pr:1.2">
+      <span><i class="rise" style="--d:260ms" data-c="hero.headline.0">〔第一行〕</i></span>
+      <span><i class="rise" style="--d:360ms" data-c="hero.headline.1">〔第二行〕</i></span>
+    </h1>
+
+    <p class="lede mask" style="--d:480ms; --pd:14; --pr:1" data-c="hero.lede">〔自我介绍〕</p>
+
+    <a class="cta" href="works.html" style="--pd:15; --pr:1.4" data-liquid>
+      <canvas aria-hidden="true"></canvas>
+      <span class="cta-lbl" data-c="hero.cta">看看作品</span>
+      <svg class="cta-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h15"/><path d="m13.5 6 6 6-6 6"/></svg>
+    </a>
+
+    <div class="stat-row" style="--pd:12">
+      <dl class="stat mask" style="--d:700ms">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+          <circle cx="15" cy="15" r="10.5" stroke-dasharray="0.6 3.6"/><circle cx="15" cy="15" r="5.6" stroke-dasharray="0.6 3.2"/><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/>
+        </svg></span>
+        <div><dt data-c="hero.stats.0.label">〔标签〕</dt><dd data-c="hero.stats.0.value">〔值〕</dd></div>
+      </dl>
+      <dl class="stat mask" style="--d:770ms">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+          <path d="M15 3.5v5"/><path d="M15 21.5v5"/><path d="M3.5 15h5"/><path d="M21.5 15h5"/>
+          <path d="M6.9 6.9l3.5 3.5"/><path d="M19.6 19.6l3.5 3.5"/><path d="M23.1 6.9l-3.5 3.5"/><path d="M10.4 19.6l-3.5 3.5"/>
+          <circle cx="15" cy="15" r="3.6"/>
+        </svg></span>
+        <div><dt data-c="hero.stats.1.label">〔标签〕</dt><dd data-c="hero.stats.1.value">〔值〕</dd></div>
+      </dl>
+    </div>
+
+    <a class="scroll mask" style="--d:1040ms; --pd:9" href="#works"><span data-c="hero.scroll">往下</span><span class="track"></span></a>
+
+  </div>
+</div>
+
+<main>
+
+  <!-- twelve plates in slow orbit — the room you walk through on the way to
+       the works. Masked at its edges so it never sits in a rectangle -->
+  <div class="gallery-band" aria-hidden="true"><canvas id="galleryCanvas"></canvas></div>
+
+  <section class="section" id="works">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="label" data-c="works.label">作品</p>
+          <h2 data-c="works.title">〔小标题〕</h2>
+          <p class="lead" data-c="works.lead">〔说明〕</p>
+        </div>
+        <a class="sec-more" href="works.html" data-c="works.more">全部作品</a>
+      </div>
+      <div class="works-grid" data-c-list="works.items" data-tpl="tpl-work"></div>
+    </div>
+  </section>
+
+  <section class="section section--dark" id="notes">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="label" data-c="notes.label">笔记</p>
+          <h2 data-c="notes.title">〔小标题〕</h2>
+          <p class="lead" data-c="notes.lead" style="color:var(--ink-soft)">〔说明〕</p>
+        </div>
+        <a class="sec-more" href="notes.html" data-c="notes.more" style="color:var(--rice);border-color:rgba(247,244,239,.28)">全部笔记</a>
+      </div>
+      <div class="notes-list" data-c-list="notes.items" data-tpl="tpl-note"></div>
+    </div>
+  </section>
+
+  <section class="section closing" id="closing">
+    <div class="wrap closing-grid">
+      <div class="closing-copy">
+        <h2 data-c="closing.title">〔结尾一句话〕</h2>
+        <p data-c="closing.text">〔补充〕</p>
+        <a class="cta" href="mailto:hello@example.com" data-c-href="mailto:site.email" data-liquid style="color:var(--rice)">
+          <canvas aria-hidden="true"></canvas>
+          <span class="cta-lbl" data-c="closing.cta">写信</span>
+          <svg class="cta-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h15"/><path d="m13.5 6 6 6-6 6"/></svg>
+        </a>
+      </div>
+
+      <!-- the mark, written in type. One click turns it into the word. -->
+      <figure class="morph" id="morph" role="button" tabindex="0" aria-pressed="false" aria-label="点一下，把标志变成一句话">
+        <canvas id="morphCanvas" aria-hidden="true"></canvas>
+        <span class="morph-word" data-c="closing.morph.word" hidden>Hi</span>
+        <figcaption class="morph-hint" data-c="closing.morph.hint">点一下</figcaption>
+      </figure>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="brandline">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#markSmall"/></svg>
+        <span class="wm" data-c="site.wordmark">Profunfis</span>
+      </div>
+      <nav aria-label="页脚导航">
+        <a href="index.html" data-c="nav.home">首页</a>
+        <a href="works.html" data-c="nav.works">作品</a>
+        <a href="notes.html" data-c="nav.notes">笔记</a>
+        <a href="about.html" data-c="nav.about">关于</a>
+        <a href="https://github.com/Profunfis" data-c-href="site.github" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:hello@example.com" data-c-href="mailto:site.email" data-c="site.email">邮箱</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span data-c="footer.note">〔页脚小字〕</span>
+      <span data-c="footer.rights">〔版权〕</span>
+    </div>
+  </div>
+</footer>
+
+<template id="tpl-work">
+  <article class="work">
+    <a class="work-link" href="#">
+      <figure class="portal">
+        <span class="portal-media"><img alt="" loading="lazy" decoding="async"></span>
+        <canvas class="pixel-reveal" aria-hidden="true"></canvas>
+        <span class="knob" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg></span>
+      </figure>
+      <div class="work-meta">
+        <p class="label" data-c="label"></p>
+        <h3 data-c="title"></h3>
+        <p class="desc" data-c="desc"></p>
+      </div>
+    </a>
+  </article>
+</template>
+
+<template id="tpl-note">
+  <a class="note-row" href="#">
+    <time data-c="date"></time>
+    <span class="t" data-c="title"></span>
+    <span class="a" aria-hidden="true">↗</span>
+  </a>
+</template>
+
+<script src="assets/js/content.js" defer></script>
+<script src="assets/js/chrome.js" defer></script>
+<script src="assets/js/mark.js" defer></script>
+<script src="assets/js/wordmark.js" defer></script>
+<script src="assets/js/liquid.js" defer></script>
+<script src="assets/js/gallery.js" defer></script>
+<script src="assets/js/morph.js" defer></script>
+</body>
 </html>
