@@ -819,3 +819,79 @@ a:focus-visible, button:focus-visible{
 @media (max-width:900px){
   .eyebrow{ display:none; }
 }
+
+/* ==========================================================================
+   11. the point field behind an inner page title
+   ========================================================================== */
+.field-canvas{
+  position:absolute; z-index:0; top:0; right:0; bottom:0;
+  width:min(66%, 720px); height:100%; display:block;
+  pointer-events:none; opacity:.62;
+  -webkit-mask-image:linear-gradient(180deg, transparent 0%, #000 30%, #000 54%, rgba(0,0,0,.55) 78%, transparent 100%);
+          mask-image:linear-gradient(180deg, transparent 0%, #000 30%, #000 54%, rgba(0,0,0,.55) 78%, transparent 100%);
+}
+.page-head .wrap{ position:relative; z-index:3; }
+.page-head .ghost{ z-index:1; }
+@media (max-width:900px){
+  .field-canvas{ width:100%; opacity:.30; }
+}
+
+/* ==========================================================================
+   12. work.html — the page a work goes to before it has been written
+   ========================================================================== */
+.crt-page{ margin:0; height:100svh; overflow:hidden; background:var(--ink); }
+.crt-stage{ position:fixed; inset:0; background:var(--ink); }
+.crt-stage canvas{ width:100%; height:100%; display:block; }
+.crt-flat{ width:100%; height:100%; display:block; }
+.crt-back{
+  position:fixed; z-index:10; top:clamp(14px, 3vh, 30px); left:clamp(16px, 3vw, 40px);
+  font-size:11.5px; font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--accent-2); text-decoration:none; opacity:.6;
+  transition:opacity .3s var(--ease);
+}
+.crt-back:hover,.crt-back:focus-visible{ opacity:1; }
+.crt-hint{
+  position:fixed; z-index:10; bottom:clamp(14px, 3vh, 30px); left:0; right:0; margin:0;
+  text-align:center; font-size:10.5px; letter-spacing:.22em;
+  color:var(--ink-soft); opacity:.42; pointer-events:none;
+}
+
+/* ==========================================================================
+   13. 404 — the mark, alone
+   ========================================================================== */
+.lost{
+  position:relative; min-height:100svh; display:grid; place-items:center;
+  padding:clamp(40px, 8vh, 90px) var(--gutter);
+  background:var(--ink); overflow:hidden; isolation:isolate; text-align:center;
+}
+.lost::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(56% 50% at 50% 42%, rgba(154,107,255,.14) 0%, rgba(154,107,255,0) 72%);
+}
+.lost-mark{
+  position:relative; z-index:1;
+  width:min(76vw, 500px); aspect-ratio:1/1; margin:0 auto;
+  pointer-events:none;
+}
+.lost-mark canvas{ width:100%; height:100%; display:block; }
+.lost-copy{ position:relative; z-index:2; margin-top:clamp(14px, 2.4vh, 28px); }
+.lost-num{
+  margin:0; font-size:clamp(13px, 1.6vw, 17px); font-weight:500;
+  letter-spacing:.52em; text-transform:uppercase; color:var(--accent);
+  text-indent:.52em;
+}
+.lost-title{
+  margin:16px 0 0; font-size:clamp(24px, 3.4vw, 40px); font-weight:350;
+  letter-spacing:-.02em; color:var(--rice);
+}
+.lost-text{ margin:14px 0 0; font-size:15px; line-height:1.7; color:var(--ink-soft); }
+.lost-cta{
+  display:inline-flex; align-items:center; gap:10px;
+  margin-top:clamp(24px, 4vh, 40px); padding:0 26px; height:52px;
+  border-radius:999px; border:1px solid rgba(201,168,255,.32);
+  background:rgba(154,107,255,.10); color:var(--rice);
+  font-size:13.5px; font-weight:500; letter-spacing:.02em; text-decoration:none;
+  transition:background .35s var(--ease), border-color .35s var(--ease), transform .35s var(--ease-out);
+}
+.lost-cta:hover{ background:rgba(154,107,255,.22); border-color:rgba(201,168,255,.55); transform:translateY(-2px); }
+.lost-cta svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }

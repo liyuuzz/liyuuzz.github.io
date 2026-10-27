@@ -166,7 +166,7 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     R = Math.min(W, H) * 0.42;
     cx = W / 2; cy = H / 2;
-    RS = Math.max(0.7, Math.min(W, H) / 400);   /* dot radius scale */
+    RS = Math.max(1.25, Math.min(W, H) / 400);   /* dot radius scale */
   }
 
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
