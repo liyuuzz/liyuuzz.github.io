@@ -1208,3 +1208,38 @@ html.no-space .hero{ background: var(--ink); }
 html.no-space .gallery-band{ background: var(--ink); }
 html.no-space .section{ background: var(--ink); }
 html.no-space .footer{ background: var(--ink); }
+
+/* ==========================================================================
+   16. the arc — the works page's background
+   A parabolic band of dots, drawn additively on a transparent canvas so the
+   page's own ground still reads underneath. It is fixed, so scrolling moves
+   the page over it rather than carrying it along.
+   ========================================================================== */
+.arc-bg{
+  position:fixed; inset:0; z-index:0;
+  pointer-events:none;
+  /* the arc belongs to the top of the page: it dies before the cards begin,
+     otherwise the grid scrolls through a glow and reads as dirty glass */
+  -webkit-mask-image:linear-gradient(180deg, #000 0%, #000 54%, rgba(0,0,0,.45) 76%, transparent 93%);
+          mask-image:linear-gradient(180deg, #000 0%, #000 54%, rgba(0,0,0,.45) 76%, transparent 93%);
+}
+.arc-bg canvas{ width:100%; height:100%; display:block; }
+
+/* with an arc behind it the header stops painting its own ground until the
+   bottom, where it closes up so the works grid stays readable */
+body.has-arc .page-head{
+  background:
+    radial-gradient(70% 60% at 84% 0%, rgba(154,107,255,.10) 0%, rgba(154,107,255,0) 62%),
+    /* the ground holds under the title, then hands over to the section's own
+       fade — both reach zero at the seam, so the arc crosses it uninterrupted */
+    linear-gradient(180deg, rgba(7,5,13,.62) 0%, rgba(7,5,13,.62) 58%, rgba(7,5,13,0) 100%);
+}
+
+@media (max-width:900px){
+  /* the arc belongs to the header on a phone too — it just has less room, so
+     it gives up earlier instead of running under the first card */
+  .arc-bg{
+    -webkit-mask-image:linear-gradient(180deg, #000 0%, #000 36%, rgba(0,0,0,.32) 64%, transparent 82%);
+            mask-image:linear-gradient(180deg, #000 0%, #000 36%, rgba(0,0,0,.32) 64%, transparent 82%);
+  }
+}
