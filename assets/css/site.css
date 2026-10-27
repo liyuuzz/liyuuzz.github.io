@@ -63,8 +63,18 @@ a{ color:inherit; }
 /* ==========================================================================
    1. hero shell
    ========================================================================== */
-.hero{
+/* The first screen is held for one extra beat instead of scrolling away
+   immediately. Pinning it is what makes the stand-down readable: the copy can
+   leave in its own windows while the room stays put, and the plate ribbon
+   arrives exactly as the pin releases. Without the pin the same fade just
+   empties a screen that is already sliding off, which reads as a bug. */
+.hero-pin{
   position:relative;
+  height:165svh;
+}
+.hero{
+  position:sticky;
+  top:0;
   width:100%;
   height:100svh;
   min-height:calc(880 * var(--u));
@@ -721,7 +731,9 @@ a:focus-visible, button:focus-visible{
    ========================================================================== */
 @media (max-width:900px){
   :root{ --u: calc(100vw / 760); }
-  .hero{ height:auto; min-height:100svh; }
+  /* a phone hero is taller than its viewport, so there is nothing to pin */
+  .hero-pin{ height:auto; }
+  .hero{ position:relative; height:auto; min-height:100svh; }
   .stage{
     position:relative; left:auto; top:auto; margin:0;
     width:100%; height:calc(1560 * var(--u));
@@ -1075,3 +1087,48 @@ html.curtain-arrived .par{ transform:none !important; }
 .portal.is-instant .portal-media{ clip-path:none !important; animation:none !important; }
 .portal.is-instant::after{ display:none !important; }
 .portal.is-instant .pixel-reveal{ display:none !important; }
+
+/* ==========================================================================
+   14. reveals — the page arrives a unit at a time
+   A section that is simply *there* when you reach it never registers. These
+   are the two cheapest ways to make it register: a heading that assembles one
+   character at a time, and a block that rises into place just after it.
+   Both are opt-in from JS (flow.js sets the attributes), so a page whose
+   script fails is still a readable page.
+   ========================================================================== */
+.js [data-rv]{
+  opacity:0;
+  transform:translate3d(0,22px,0);
+}
+.js [data-rv].rv-in{
+  opacity:1;
+  transform:none;
+  transition:opacity .82s var(--ease-out), transform .95s var(--ease-out);
+  transition-delay:var(--d, 0ms);
+}
+
+/* The mask has to be a clipping box for the character to slide up out of it,
+   and a clipping box on a line of Chinese eats descenders — the padding is
+   there to give the glyph its bottom back, the negative margin to cancel what
+   the padding did to the line box. */
+.js .rv-word .wm{
+  display:inline-block; overflow:hidden; vertical-align:top;
+  padding:.10em 0 .24em; margin:-.10em 0 -.24em;
+}
+.js .rv-word .wm > i{
+  display:inline-block; font-style:normal;
+  opacity:0; transform:translate3d(0,116%,0);
+  transition:transform .80s var(--ease-out), opacity .48s var(--ease-out);
+  transition-delay:var(--wd, 0ms);
+}
+.js .rv-word.rv-in .wm > i{ opacity:1; transform:none; }
+
+@media (prefers-reduced-motion:reduce){
+  .js [data-rv]{ opacity:1 !important; transform:none !important; }
+  .js .rv-word .wm{ overflow:visible; padding:0; margin:0; }
+  .js .rv-word .wm > i{ opacity:1 !important; transform:none !important; }
+}
+
+/* a title split into characters is a very wide inline-block run; keep it from
+   opening gaps where the spaces used to be */
+.rv-word .wm + .wm{ margin-left:0; }
