@@ -522,7 +522,11 @@ a{ color:inherit; }
 .portal{
   position:relative; border-radius:clamp(14px,1.6vw,20px);
   overflow:hidden; isolation:isolate;
-  aspect-ratio:4/3; background:#0A0613;
+  aspect-ratio:4/3;
+  /* a cover that has not arrived yet is a plate with light on it, not a hole */
+  background:
+    radial-gradient(90% 120% at 30% 0%, rgba(154,107,255,.10), rgba(154,107,255,0) 62%),
+    #0A0613;
 }
 /* the 9px overscan that keeps the 3D tilt from showing its edges was also
    eating ~7% of a cover whose subject starts near the frame — these covers
@@ -540,7 +544,11 @@ a{ color:inherit; }
 }
 .portal-media img{ width:100%; height:100%; object-fit:cover; transform:scale(1.03);
   filter:saturate(.94) contrast(1.03);
-  transition:transform 1.25s var(--ease-out), filter .8s var(--ease); }
+  transition:transform 1.25s var(--ease-out), filter .8s var(--ease), opacity .7s var(--ease); }
+/* fade a cover up when it lands; the reveal wipe is already running, and a
+   picture that pops in grey and then colours up looks like a mistake */
+.js .portal-media img{ opacity:0; }
+.js .portal-media img.is-in{ opacity:1; }
 .work-link:hover .portal-media img{ transform:scale(1.08); filter:saturate(1.04) contrast(1.04); }
 /* no photograph yet: a plate made of the brand itself, so the frame never
    reads as a broken image while the copy is still being written */

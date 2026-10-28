@@ -103,6 +103,10 @@
         if (item.image) {
           img.setAttribute('src', item.image);
           img.setAttribute('alt', item.title || '');
+          /* the cover is hidden until it has actually decoded, so a slow
+             connection shows an empty plate rather than a half-painted one */
+          if (img.complete && img.naturalWidth) img.classList.add('is-in');
+          else img.addEventListener('load', function () { this.classList.add('is-in'); }, { once: true });
         } else {
           /* no photograph yet: the plate carries the mark as a watermark, so
              an unfinished card still looks deliberate */
