@@ -1613,7 +1613,7 @@
         <span>想法与过程</span>
       </div>
       <div class="editorial-index">
-        <a href="index.html" style="color:inherit">← 返回首页</a>
+        <a href="index.html" target="_top" style="color:inherit">← 返回首页</a>
         <span id="palette-label">Ultramarine · bone · copper</span>
       </div>
     </header>
@@ -5037,6 +5037,7 @@
     }
 
     function onWheel(event) {
+      if (new URLSearchParams(location.search).has("embedded")) return;
       if (mode !== "hero") return;
       event.preventDefault();
       const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
