@@ -1542,3 +1542,38 @@ body.has-arc .page-head{
 .project-intro { max-width: 36em; }
 .project-story { border-top: 1px solid rgba(237,233,248,.12); padding-top: 32px; }
 .project-back { border-bottom: 1px solid rgba(210,189,242,.4); padding-bottom: 6px; }
+
+/* A luminous, editorial layer for the portfolio. */
+:root { --accent: #a99aff; --accent-2: #bdeeff; --ink-soft: rgba(232,231,249,.76); }
+.hero { background: radial-gradient(ellipse at 76% 45%,rgba(103,83,212,.37),transparent 47%),radial-gradient(ellipse at 18% 80%,rgba(71,151,180,.15),transparent 42%),#070710; }
+.headline { text-shadow: 0 0 50px rgba(173,150,255,.17); }
+.eyebrow { color: #bdeeff; letter-spacing: .18em; }
+.dock { border-color: rgba(185,199,255,.25); box-shadow: 0 15px 45px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.14); }
+.sec-head h2 { letter-spacing: -.04em; }
+.sec-head .label { color: #a9dcef; }
+.work-link { background: linear-gradient(155deg,rgba(121,111,185,.16),rgba(22,19,40,.9) 55%,rgba(10,10,22,.98)); border: 1px solid rgba(181,186,255,.18); box-shadow: inset 0 1px rgba(255,255,255,.08),0 22px 60px -35px #000; }
+.work-link:hover { border-color:rgba(177,224,255,.56); box-shadow:0 28px 70px -30px rgba(105,93,232,.5),inset 0 1px rgba(255,255,255,.16); }
+.portal { border:1px solid rgba(218,217,255,.1); }
+.work-meta .label { color:#a9dcef; }
+.knob { border:1px solid rgba(195,226,255,.35); }
+.note-row { transition: background .4s var(--ease), padding .4s var(--ease), border-color .4s var(--ease); }
+.note-row:hover { border-bottom-color:rgba(178,224,255,.5); }
+.project-visual { border:1px solid rgba(194,200,255,.18); box-shadow:0 32px 90px -50px rgba(116,107,235,.55); }
+.project-head a:last-child { letter-spacing:.14em; text-transform:uppercase; font-size:12px; }
+
+/* Luminous visual accents */
+:root { --accent: #a99aff; --accent-2: #bdeeff; --ink-soft: rgba(232,231,249,.76); }
+.hero { background: radial-gradient(ellipse at 76% 45%,rgba(103,83,212,.37),transparent 47%),radial-gradient(ellipse at 18% 80%,rgba(71,151,180,.15),transparent 42%),#070710; }
+.headline { text-shadow: 0 0 50px rgba(173,150,255,.17); }
+.eyebrow { color: #bdeeff; letter-spacing: .18em; }
+.dock { border-color: rgba(185,199,255,.25); box-shadow: 0 15px 45px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.14); }
+.sec-head h2 { letter-spacing: -.04em; }
+.sec-head .label { color: #a9dcef; }
+.work-link { background: linear-gradient(155deg,rgba(121,111,185,.16),rgba(22,19,40,.9) 55%,rgba(10,10,22,.98)); border: 1px solid rgba(181,186,255,.18); box-shadow: inset 0 1px rgba(255,255,255,.08),0 22px 60px -35px #000; }
+.work-link:hover { border-color:rgba(177,224,255,.56); box-shadow:0 28px 70px -30px rgba(105,93,232,.5),inset 0 1px rgba(255,255,255,.16); }
+.portal { border:1px solid rgba(218,217,255,.1); }
+.work-meta .label { color:#a9dcef; }
+.knob { border:1px solid rgba(195,226,255,.35); }
+.note-row:hover { border-bottom-color:rgba(178,224,255,.5); }
+.project-visual { border:1px solid rgba(194,200,255,.18); box-shadow:0 32px 90px -50px rgba(116,107,235,.55); }
+.project-head a:last-child { letter-spacing:.14em; text-transform:uppercase; font-size:12px; }
