@@ -1600,7 +1600,7 @@
       }
     }
   </script>
-<style>.editorial-header a {text-decoration:none}.detail-deck {line-height:1.75}.detail-title {font-family:system-ui,sans-serif}.static-fallback a {color:#ede9f8}.fallback-book {display:block;text-decoration:none;padding:20px;min-height:100px;background:#29243e}</style></head>
+<style>.experience:not(.webgl-ready) #browse-ui{visibility:hidden}.editorial-header a {text-decoration:none}.detail-deck {line-height:1.75}.detail-title {font-family:system-ui,sans-serif}.static-fallback a {color:#ede9f8}.fallback-book {display:block;text-decoration:none;padding:20px;min-height:100px;background:#29243e}</style></head>
 <body>
   <main class="experience" id="experience">
     <div class="scene-shell">
@@ -1683,7 +1683,7 @@
           <dd id="detail-motif">Nested brackets</dd>
         </div>
       </dl>
-      <p><a id="plain-reader" href="note.html?n=1" style="color:#c9bdff;font-size:14px">以普通页面阅读全文 ↗</a></p>
+      <p><a id="plain-reader" target="_top" href="note.html?n=1" style="color:#c9bdff;font-size:14px">以普通页面阅读全文 ↗</a></p>
       <div class="page-navigation" role="group" aria-label="Browse sample pages">
         <button class="page-button" id="previous-page" type="button" aria-label="上一页" disabled>
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10.5 3.5-4.5 4.5 4.5 4.5"></path></svg>
@@ -1707,7 +1707,7 @@
 
     <div class="sr-only" id="live-region" aria-live="polite"></div>
 
-    <section class="static-fallback" id="static-fallback"><div class="fallback__header"><div><h2>笔记</h2><p id="fallback-status">3D 书架暂时不可用，请使用下方链接阅读。</p></div></div><div class="fallback__grid" id="fallback-list"><a class="fallback-book" href="note.html?n=1">一颗点该站在哪里</a><a class="fallback-book" href="note.html?n=2">十二块板为什么不能平铺</a><a class="fallback-book" href="note.html?n=3">删到只剩文字</a><a class="fallback-book" href="note.html?n=4">图片一进来，排版就变了</a><a class="fallback-book" href="note.html?n=5">六个封面，六种颜色</a><a class="fallback-book" href="note.html?n=6">截不到的那一帧</a><a class="fallback-book" href="note.html?n=7">详情页该有的只有三样</a></div><p><a href="index.html">返回首页</a></p></section>
+    <section class="static-fallback" id="static-fallback"><div class="fallback__header"><div><h2>笔记</h2><p id="fallback-status">3D 书架暂时不可用，请使用下方链接阅读。</p></div></div><div class="fallback__grid" id="fallback-list"><a class="fallback-book" target="_top" href="note.html?n=1">一颗点该站在哪里</a><a class="fallback-book" target="_top" href="note.html?n=2">十二块板为什么不能平铺</a><a class="fallback-book" target="_top" href="note.html?n=3">删到只剩文字</a><a class="fallback-book" target="_top" href="note.html?n=4">图片一进来，排版就变了</a><a class="fallback-book" target="_top" href="note.html?n=5">六个封面，六种颜色</a><a class="fallback-book" target="_top" href="note.html?n=6">截不到的那一帧</a><a class="fallback-book" target="_top" href="note.html?n=7">详情页该有的只有三样</a></div><p><a href="index.html">返回首页</a></p></section>
 
     <div class="loading" id="loading" aria-live="polite">
       <div class="loading__inner">
@@ -5048,6 +5048,7 @@
 
     function openDetail(origin = inspectButton) {
       if (mode !== "hero") return;
+      if (window.parent !== window) window.parent.postMessage("notes-open", location.origin);
       mode = "opening";
       transitionTime = 0;
       readingOpen = false;
@@ -5650,7 +5651,7 @@
           return {...base, id: "note-" + i, title: note.title, roman: String(i + 1).padStart(2,"0"), discipline:"笔记", note:note.excerpt, deck:note.excerpt, body:note.body, binding:"笔记", format:note.date, theme:"想法与过程", motif:"文字与记录", color:colors[i % colors.length], foil:"#ded8ff", width:1.02, height:1.58, depth:.26, paletteLabel:"笔记 · 想法与过程", palette:{...base.palette,paper:"#100d1b",paperDeep:"#090713",wall:"#171429",shelf:"#29223c",shelfDark:"#151022",light:"#d1c4ff",fill:"#9ebddd"}};
         });
         const fallback = document.getElementById("fallback-list"); fallback.textContent = "";
-        notes.forEach((note,i) => { const link=document.createElement("a"); link.className="fallback-book"; link.href="note.html?n="+(i+1); link.textContent=note.title; fallback.appendChild(link); });
+        notes.forEach((note,i) => { const link=document.createElement("a"); link.className="fallback-book"; link.href="note.html?n="+(i+1); link.target="_top"; link.textContent=note.title; fallback.appendChild(link); });
         if (!BOOKS.length) throw new Error("no notes");
       } catch (error) { showFallback("笔记暂时无法加载，请刷新页面再试。"); return; }
 
