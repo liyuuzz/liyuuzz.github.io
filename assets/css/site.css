@@ -8,7 +8,7 @@
   --u: calc(100vw / 1600);
 
   /* abyss: every surface is the same near-black, tinted violet rather than
-     neutral �� the difference between "dark theme" and "deep" */
+     neutral — the difference between "dark theme" and "deep" */
   --ink:        #07050D;
   --ink-2:      #0C0816;
   --ink-soft:   rgba(232,227,247,.60);
@@ -87,7 +87,7 @@ a{ color:inherit; }
     var(--ink);
 }
 /* the floor of light the composition stands in, plus a terracotta bloom
-   sitting behind the mark �� the single warm accent the whole page hangs on */
+   sitting behind the mark — the single warm accent the whole page hangs on */
 .hero::after{
   content:'';
   position:absolute; inset:0;
@@ -120,7 +120,7 @@ a{ color:inherit; }
 }
 
 /* ==========================================================================
-   2. dock �� a floating capsule whose pills grow toward the pointer
+   2. dock — a floating capsule whose pills grow toward the pointer
    ========================================================================== */
 .dock-wrap{
   position:absolute; z-index:5;
@@ -207,7 +207,7 @@ a{ color:inherit; }
 .dock-item.is-active .glyph{ opacity:1; }
 .dock-item--enter{ color:var(--accent-2); background:rgba(154,107,255,.16); border-color:rgba(154,107,255,.34); }
 
-/* specular rim �� a conic gradient masked down to the border, its start angle
+/* specular rim — a conic gradient masked down to the border, its start angle
    pointed at the pointer. This is what makes the glass read as a lit edge. */
 [data-spec]{ --spec-angle:2.4rad; --spec-bright:0; }
 [data-spec]::after{
@@ -369,7 +369,7 @@ a{ color:inherit; }
 }
 
 /* ==========================================================================
-   5. entrance �� everything is wiped in behind a mask
+   5. entrance — everything is wiped in behind a mask
    Transform is reserved for the pointer parallax, so the reveal uses
    clip-path. Once the intro is done .intro-done drops the clips entirely:
    a live clip-path keeps a stacking context alive and would trap children.
@@ -429,7 +429,7 @@ a{ color:inherit; }
 }
 
 /* ==========================================================================
-   7. sections below the fold �� normal flow, clamp-based type
+   7. sections below the fold — normal flow, clamp-based type
    ========================================================================== */
 /* the ribbon of plates between the hero and the works: full-bleed, masked at
    every edge so it dissolves into the ground instead of sitting in a box */
@@ -466,7 +466,7 @@ a{ color:inherit; }
     var(--ink);
   color:var(--rice);
   /* no border-top: with the room behind the page, a full-width hairline is the
-     one thing that still reads as "the edge of a panel" �� and it is now the
+     one thing that still reads as "the edge of a panel" — and it is now the
      only hard line left between sections */
 }
 .section--dark{
@@ -563,7 +563,7 @@ a{ color:inherit; }
   position:absolute; inset:0; z-index:3; width:100%; height:100%;
   pointer-events:none; opacity:0; mix-blend-mode:screen;
 }
-/* the white scan rides the clip edge �� its travel is the media box, not the
+/* the white scan rides the clip edge — its travel is the media box, not the
    figure's, because .portal-media is overscanned by 9px on every side */
 .portal::after{
   content:''; position:absolute; z-index:2;
@@ -596,7 +596,7 @@ a{ color:inherit; }
   font-weight:500; letter-spacing:-.01em; color:var(--rice);
 }
 .work-meta p.desc{ margin-top:8px; font-size:14px; line-height:1.65; color:var(--ink-soft); }
-/* the knob sits on the plate, not on the copy �� a 38px disc parked over a
+/* the knob sits on the plate, not on the copy — a 38px disc parked over a
    two-line description is the fastest way to make a card look unbalanced */
 .knob{
   position:absolute; z-index:4; right:14px; bottom:14px;
@@ -740,7 +740,7 @@ a:focus-visible, button:focus-visible{
 }
 
 /* ==========================================================================
-   9. narrow screens �� one column, the mark becomes a band between the copy
+   9. narrow screens — one column, the mark becomes a band between the copy
       and the figures
    ========================================================================== */
 @media (max-width:900px){
@@ -837,7 +837,7 @@ a:focus-visible, button:focus-visible{
 .facts li span{ color:var(--card-label); }
 .facts li b{ font-weight:500; color:var(--rice); }
 
-/* if content.json cannot be read the page still renders �� it just says so */
+/* if content.json cannot be read the page still renders — it just says so */
 .content-error{
   position:fixed; z-index:99; left:50%; bottom:24px; transform:translateX(-50%);
   max-width:min(560px, calc(100vw - 32px));
@@ -874,7 +874,7 @@ a:focus-visible, button:focus-visible{
 }
 
 /* ==========================================================================
-   12. work.html �� the page a work goes to before it has been written
+   12. work.html — the page a work goes to before it has been written
    ========================================================================== */
 .crt-page{ margin:0; height:100svh; overflow:hidden; background:var(--ink); }
 .crt-stage{ position:fixed; inset:0; background:var(--ink); }
@@ -895,7 +895,7 @@ a:focus-visible, button:focus-visible{
 
 
 /* ==========================================================================
-   13. 404 �� the mark, alone
+   13. 404 — the mark, alone
    ========================================================================== */
 .lost{
   position:relative; min-height:100svh; display:grid; place-items:center;
@@ -935,7 +935,7 @@ a:focus-visible, button:focus-visible{
 .lost-cta svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 
 /* ==========================================================================
-   11. moving between pages �� the curtain
+   11. moving between pages — the curtain
    Two halves of one gesture: it comes up from the bottom to hide the page you
    are leaving, and drops away from the top to give you the next one. Themed
    rather than neutral so the gap reads as part of the site, not a blank.
@@ -1023,7 +1023,7 @@ html.is-arriving .veil{ transform:translateY(0); transition:none; }
 .prose p:first-child{
   font-size:1.08em; color:var(--rice);
 }
-/* a one-line paragraph is a beat, not a paragraph �� the accent stops the eye */
+/* a one-line paragraph is a beat, not a paragraph — the accent stops the eye */
 .prose .prose-beat{
   margin:1.9em 0;
   font-size:1.02em; color:var(--accent-2); letter-spacing:.01em;
@@ -1080,7 +1080,7 @@ html.is-arriving .veil{ transform:translateY(0); transition:none; }
 }
 
 /* Arriving behind the curtain: the page is photographed while it is still
-   covered, and the staggered intro would then play *after* the reveal �� the
+   covered, and the staggered intro would then play *after* the reveal — the
    dock half drawn, the headline still rising. The curtain is the entrance, so
    the entrance choreography is skipped and the finished page is what lifts
    into view. The class only lives for the length of the reveal. */
@@ -1106,7 +1106,7 @@ html.curtain-arrived .par{ transform:none !important; }
 .portal.is-instant .pixel-reveal{ display:none !important; }
 
 /* ==========================================================================
-   14. reveals �� the page arrives a unit at a time
+   14. reveals — the page arrives a unit at a time
    A section that is simply *there* when you reach it never registers. These
    are the two cheapest ways to make it register: a heading that assembles one
    character at a time, and a block that rises into place just after it.
@@ -1125,7 +1125,7 @@ html.curtain-arrived .par{ transform:none !important; }
 }
 
 /* The mask has to be a clipping box for the character to slide up out of it,
-   and a clipping box on a line of Chinese eats descenders �� the padding is
+   and a clipping box on a line of Chinese eats descenders — the padding is
    there to give the glyph its bottom back, the negative margin to cancel what
    the padding did to the line box. */
 .js .rv-word .wm{
@@ -1151,7 +1151,7 @@ html.curtain-arrived .par{ transform:none !important; }
 .rv-word .wm + .wm{ margin-left:0; }
 
 /* ==========================================================================
-   15. the room �� a point cloud the page is read in front of
+   15. the room — a point cloud the page is read in front of
    Everything above this line is flat: canvas painted onto a rectangle. This is
    the only layer with depth, and it is fixed, so scrolling moves the camera
    rather than the background. The page's own grounds then have to be slightly
@@ -1176,7 +1176,7 @@ main{ position:relative; z-index:1; }
    Only the top-right bloom stays on the element: every light that reaches the
    hero's bottom edge lives on ::after instead, because that layer is masked
    and this one is not. A light clipped by the element's own edge draws a
-   horizontal seam across the page �� which is exactly what happened the first
+   horizontal seam across the page — which is exactly what happened the first
    time the grounds were opened up. */
 .hero{
   background:
@@ -1185,7 +1185,7 @@ main{ position:relative; z-index:1; }
 }
 /* the ribbon is the window: through it you see the room itself */
 .gallery-band{ background:transparent; }
-/* One scrim, one opacity, everywhere �� and it is deliberately *thin*. At 58%
+/* One scrim, one opacity, everywhere — and it is deliberately *thin*. At 58%
    the sections still sealed the room off behind them; at 40% the corridor of
    points reads straight through the copy. To buy back the legibility the wall
    used to provide, the text carries its own soft shadow (below) instead of the
@@ -1228,7 +1228,7 @@ html.no-space .section{ background: var(--ink); }
 html.no-space .footer{ background: var(--ink); }
 
 /* ==========================================================================
-   16. the arc �� the works page's background
+   16. the arc — the works page's background
    A parabolic band of dots, drawn additively on a transparent canvas so the
    page's own ground still reads underneath. It is fixed, so scrolling moves
    the page over it rather than carrying it along.
@@ -1249,12 +1249,12 @@ body.has-arc .page-head{
   background:
     radial-gradient(70% 60% at 84% 0%, rgba(154,107,255,.10) 0%, rgba(154,107,255,0) 62%),
     /* the ground holds under the title, then hands over to the section's own
-       fade �� both reach zero at the seam, so the arc crosses it uninterrupted */
+       fade — both reach zero at the seam, so the arc crosses it uninterrupted */
     linear-gradient(180deg, rgba(7,5,13,.62) 0%, rgba(7,5,13,.62) 58%, rgba(7,5,13,0) 100%);
 }
 
 @media (max-width:900px){
-  /* the arc belongs to the header on a phone too �� it just has less room, so
+  /* the arc belongs to the header on a phone too — it just has less room, so
      it gives up earlier instead of running under the first card */
   .arc-bg{
     -webkit-mask-image:linear-gradient(180deg, #000 0%, #000 36%, rgba(0,0,0,.32) 64%, transparent 82%);
@@ -1263,10 +1263,10 @@ body.has-arc .page-head{
 }
 
 /* ==========================================================================
-   17. the shelf �� the notes page, borrowed from the reference bookshelf
+   17. the shelf — the notes page, borrowed from the reference bookshelf
    The notes used to be a list of rows. They are seven thin books now: the
    page is one screen of dark room, one plank of walnut, and one volume pulled
-   out far enough to read. Nothing here is 3D �� a spine strip, a gutter shadow
+   out far enough to read. Nothing here is 3D — a spine strip, a gutter shadow
    and a page edge do the whole job, and no face can go missing.
    ========================================================================== */
 .page-shelf{
