@@ -73,7 +73,13 @@
 
     var out = document.createDocumentFragment();
 
-    for (var i = 0; i < items.length; i++) {
+    /* an index page shows a taste of a list, the list page shows the list.
+       data-limit keeps that decision in the markup instead of duplicating the
+       data or slicing it in JS at the call site */
+    var limit = parseInt(container.getAttribute('data-limit'), 10);
+    var count = limit > 0 ? Math.min(limit, items.length) : items.length;
+
+    for (var i = 0; i < count; i++) {
       var item = items[i] || {};
       var frag = tpl.content.cloneNode(true);
       var node = frag.firstElementChild;
@@ -86,6 +92,11 @@
       /* per-item specifics that are not plain text */
       var link = frag.querySelector('a');
       if (link && item.href) link.setAttribute('href', item.href);
+
+      /* every case carries the colour of the thing it is showing; the card
+         glows in it instead of the site accent, so six unrelated designs can
+         share a grid without being flattened into one look */
+      if (item.accent) node.style.setProperty('--work-accent', item.accent);
 
       var img = frag.querySelector('img');
       if (img) {
