@@ -1,31 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title data-c="site.title">Profunfis</title>
-<meta name="description" content="一件作品。">
-<meta name="theme-color" content="#07050D">
-<meta name="color-scheme" content="dark">
-<link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/site.css">
-<script>(function(d,s){d.className+=" js";try{if(s.getItem("nav-leaving")==="1"){s.removeItem("nav-leaving");d.className+=" is-arriving";}}catch(e){}})(document.documentElement,sessionStorage);</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>��Ʒ��Profunfis</title><meta name="description" content="���ڽ����빤�ߵĳ��ԡ�">
+<meta name="theme-color" content="#07050D"><link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/css/site.css">
 </head>
-<body class="crt-page">
-
-<div class="veil" aria-hidden="true"></div>
-
-<div class="crt-stage" id="crtStage">
-  <canvas id="crtCanvas" aria-hidden="true"></canvas>
-</div>
-
-<!-- the terminal is a picture of a page, so the page still needs a heading -->
-<h1 class="sr-only" id="crtTitle">作品</h1>
-
-<a class="crt-back" href="works.html">← 返回</a>
-<p class="crt-hint">点任意位置返回</p>
-
-<script src="assets/js/crt.js" defer></script>
-<script src="assets/js/nav.js" defer></script>
-</body>
-</html>
+<body class="project-page">
+<header class="project-head"><a href="works.html">�� ȫ����Ʒ</a><a href="index.html">Profunfis</a></header>
+<main class="project-main">
+  <p class="label" id="projectLabel">��Ʒ</p>
+  <h1 id="projectTitle">��Ʒ����</h1>
+  <p class="project-intro" id="projectDesc">�������ڼ��ء����û����ʾ����ˢ��ҳ�����ԡ�</p>
+  <figure class="project-visual" id="projectVisual" hidden><img id="projectImage" alt=""></figure>
+  <section class="project-story" id="projectStory" hidden><p class="label">������γ���</p><p id="projectDetail"></p><p class="project-caption">����ʾ��ͼ �� ��¼�뷨�����</p></section>
+  <a class="project-back" href="works.html">�� �ص�ȫ����Ʒ</a>
+</main>
+<script src="assets/js/work-detail.js" defer></script>
+</body></html>

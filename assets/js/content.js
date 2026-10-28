@@ -1,5 +1,5 @@
 /* ==========================================================================
-   content.js — the whole site reads its copy out of content.json.
+   content.js �� the whole site reads its copy out of content.json.
    Nothing else in the project hard-codes a sentence, so editing that one
    file is the only thing needed to change what the site says.
 
@@ -28,7 +28,7 @@
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       var key = el.getAttribute('data-c');
-      /* an empty key means "this element is the value" — used by the
+      /* an empty key means "this element is the value" �� used by the
          paragraph template, where each list entry is a plain string */
       var v = key === '' ? scope : get(scope, key);
       if (v == null) continue;
@@ -157,10 +157,7 @@
       document.documentElement.setAttribute('data-content', 'missing');
       var banner = document.createElement('div');
       banner.className = 'content-error';
-      banner.innerHTML =
-        '文案没有加载出来（<b>' + (err && err.message ? err.message : '读取失败') + '</b>）。' +
-        'content.json 需要经由 HTTP 打开 —— 用 <code>python -m http.server</code> 起个本地服务，' +
-        '或者直接看线上的 GitHub Pages。';
+      banner.textContent = '����������ʱ�޷����أ���ˢ��ҳ�����ԡ�';
       document.body.appendChild(banner);
       return null;
     });
