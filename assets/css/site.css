@@ -1525,3 +1525,20 @@ body.has-arc .page-head{
 .project-story .label{margin-bottom:20px}.project-caption{font-size:13px;color:#9787a6;margin-top:30px}
 .project-back{display:inline-block;margin-top:72px;color:#d2bdf2}
 .content-fallback{color:#bfb2d1;line-height:1.7}
+
+/* A quieter, more consistent rhythm for the portfolio. */
+.sec-head { gap: 24px; }
+.sec-head .lead { max-width: 38em; }
+.work-link { padding: 12px 12px 26px; border-radius: 20px; }
+.portal { border-radius: 12px; }
+.work-meta { padding: 24px 12px 0; }
+.work-meta h3 { margin-top: 12px; line-height: 1.4; }
+.work-meta p.desc { margin-top: 12px; line-height: 1.8; }
+.note-row { padding-top: 26px; padding-bottom: 26px; }
+.note-main { gap: 10px; }
+.section--dark .note-row .d { color: rgba(232,227,247,.68); }
+.project-head { border-bottom: 1px solid rgba(237,233,248,.1); }
+.project-main { padding-top: clamp(72px,9vw,120px); }
+.project-intro { max-width: 36em; }
+.project-story { border-top: 1px solid rgba(237,233,248,.12); padding-top: 32px; }
+.project-back { border-bottom: 1px solid rgba(210,189,242,.4); padding-bottom: 6px; }
