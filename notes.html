@@ -1600,7 +1600,7 @@
       }
     }
   </script>
-<style>.experience:not(.webgl-ready) #browse-ui{visibility:hidden}.editorial-header a {text-decoration:none}.detail-deck {line-height:1.75}.detail-title {font-family:system-ui,sans-serif}.static-fallback a {color:#ede9f8}.fallback-book {display:block;text-decoration:none;padding:20px;min-height:100px;background:#29243e}</style></head>
+<style>.experience:not(.webgl-ready) #browse-ui{visibility:hidden}.editorial-header a {text-decoration:none}.detail-deck {line-height:1.75}.detail-title {font-family:system-ui,sans-serif}.static-fallback a {color:#ede9f8}.fallback-book {display:block;text-decoration:none;padding:20px;min-height:100px;background:#29243e}</style><script>if(new URLSearchParams(location.search).has('embedded'))document.documentElement.classList.add('embedded-shelf');</script><style>.embedded-shelf .editorial-index a,.embedded-shelf .static-fallback > p:last-child{display:none}</style></head>
 <body>
   <main class="experience" id="experience">
     <div class="scene-shell">
@@ -2053,6 +2053,7 @@
     let currentSpread = 0;
     let pointerDirty = false;
     let suspended = false;
+    let shelfOffscreen = false;
     let viewWidth = window.innerWidth;
     let viewHeight = window.innerHeight;
     let detailViewOffsetX = 0;
@@ -5547,7 +5548,7 @@
     }
 
     function onVisibilityChange() {
-      suspended = document.hidden;
+      suspended = document.hidden || shelfOffscreen;
       if (!suspended) {
         lastTime = performance.now();
         requestFrame();
@@ -5560,6 +5561,12 @@
         }
       }
     }
+
+    window.addEventListener("message", function(event) {
+      if (event.origin !== location.origin || event.source !== window.parent || !event.data || event.data.type !== "shelf-visibility") return;
+      shelfOffscreen = !event.data.visible;
+      onVisibilityChange();
+    });
 
     function onWindowBlur() {
       settlePageDrag(true);

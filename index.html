@@ -10,8 +10,8 @@
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/site.css">
 <script>(function(d,s){d.className+=" js";try{if(s.getItem("nav-leaving")==="1"){s.removeItem("nav-leaving");d.className+=" is-arriving";}}catch(e){}})(document.documentElement,sessionStorage);</script>
-<style>.home-bookshelf{scroll-margin-top:12px;width:100%;height:clamp(590px,88vh,820px);overflow:hidden;border:1px solid rgba(195,186,255,.2);border-radius:22px;background:#100d1b;box-shadow:0 35px 80px -45px #000}.home-bookshelf iframe{display:block;width:100%;height:100%;border:0}.home-bookshelf-hint{margin-top:18px;color:rgba(232,227,247,.7);font-size:14px;line-height:1.7}.home-bookshelf-hint + .notes-list{margin-top:36px}.home-bookshelf-hint a{margin-left:12px;color:#d4c5ff}@media(max-width:700px){.home-bookshelf{height:680px;border-radius:14px}.home-bookshelf-hint a{display:inline-block;margin-left:0;margin-top:8px}}</style></head>
-<body>
+<style>.home-bookshelf{scroll-margin-top:12px;width:100%;height:clamp(590px,88vh,820px);overflow:hidden;border:1px solid rgba(195,186,255,.2);border-radius:22px;background:#100d1b;box-shadow:0 35px 80px -45px #000}.home-bookshelf iframe{display:block;width:100%;height:100%;border:0}.home-bookshelf-hint{margin-top:18px;color:rgba(232,227,247,.7);font-size:14px;line-height:1.7}.home-bookshelf-hint + .notes-list{margin-top:36px}.home-bookshelf-hint a{margin-left:12px;color:#d4c5ff}@media(max-width:700px){.home-bookshelf{height:680px;border-radius:14px}.home-bookshelf-hint a{display:inline-block;margin-left:0;margin-top:8px}}</style><style>.home-page .veil{display:none}.home-page .hero .headline,.home-page .hero .lede{opacity:1!important;transform:none!important;visibility:visible!important}.js .home-page .hero .rise,.js .home-page .hero .fade{opacity:1;transform:none}.js .home-page .hero .mask{clip-path:none}.js .home-page .dock{opacity:1}.js .home-page .dock-item{clip-path:none}</style></head>
+<body class="home-page">
 
 <div class="veil" aria-hidden="true"></div>
 
@@ -152,7 +152,7 @@
         </div>
         <a class="sec-more" href="notes.html" data-c="notes.more" style="color:var(--rice);border-color:rgba(247,244,239,.28)">全部笔记</a>
       </div>
-      <div class="home-bookshelf"><iframe src="notes.html?embedded=1" title="可交互的笔记书架" loading="lazy" allow="fullscreen"></iframe></div>
+      <div class="home-bookshelf"><iframe data-src="notes.html?embedded=1" title="可交互的笔记书架" allow="fullscreen"></iframe><noscript><a href="notes.html">打开笔记书架</a></noscript></div>
       <p class="home-bookshelf-hint">点击书架上的箭头选择笔记，打开书后可以翻页。<a href="notes.html">全屏打开书架 ↗</a></p>
       <div class="notes-list" data-c-list="notes.items" data-tpl="tpl-note" data-limit="4"><p class="content-fallback">笔记暂时无法显示，请刷新页面再试。</p></div>
     </div>
@@ -245,5 +245,5 @@
 <script src="assets/js/morph.js" defer></script>
 <script src="assets/js/flow.js" defer></script>
 <script src="assets/js/space.js" defer></script>
-<script>window.addEventListener('message',function(e){var frame=document.querySelector('.home-bookshelf iframe');if(e.origin===location.origin && frame && e.source===frame.contentWindow && e.data==='notes-open')frame.scrollIntoView({behavior:'smooth',block:'start'});});</script></body>
+<script>(function(){var frame=document.querySelector('.home-bookshelf iframe');if(!frame)return;function load(){if(!frame.src)frame.src=frame.dataset.src;}if('IntersectionObserver' in window){var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting)load();if(frame.contentWindow && frame.src)frame.contentWindow.postMessage({type:'shelf-visibility',visible:entry.isIntersecting},location.origin);});},{rootMargin:'250px'});observer.observe(frame);frame.addEventListener('load',function(){if(frame.contentWindow)frame.contentWindow.postMessage({type:'shelf-visibility',visible:true},location.origin);});}else load();})();</script><script>window.addEventListener('message',function(e){var frame=document.querySelector('.home-bookshelf iframe');if(e.origin===location.origin && frame && e.source===frame.contentWindow && e.data==='notes-open')frame.scrollIntoView({behavior:'smooth',block:'start'});});</script></body>
 </html>
