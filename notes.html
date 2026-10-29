@@ -2160,8 +2160,6 @@
     const scratchVector = new THREE.Vector3();
     const shelfBoardTop = 0.47;
     const spacing = 1.5;
-    const PAGINATED_LEAF_COUNT = 4;
-    const SPREAD_COUNT = PAGINATED_LEAF_COUNT + 1;
     const FLEXIBLE_PAGE_SEGMENTS = 18;
     const FLEXIBLE_PAGE_VERTICAL_SEGMENTS = 8;
     const PAGE_TURN_COMMIT_PROGRESS = 0.18;
@@ -2774,26 +2772,36 @@
     }
 
     function makeInteriorPageTextures(book) {
-      const content = (book.body || []).join("\n\n");
-      const chars = Array.from(content);
-      const size = Math.max(1, Math.ceil(chars.length / 8));
-      return Array.from({ length: 8 }, (_, pageIndex) => {
+      const measure = document.createElement("canvas").getContext("2d");
+      measure.font = '30px "Microsoft YaHei", "PingFang SC", sans-serif';
+      const lines = [];
+      for (const paragraph of (book.body || [])) {
+        let line = "";
+        for (const c of Array.from(paragraph)) {
+          if (c === "\n" || (line && measure.measureText(line + c).width > 624)) {
+            lines.push(line); line = c === "\n" ? "" : c;
+          } else line += c;
+        }
+        if (line) lines.push(line);
+        lines.push("");
+      }
+      while (lines.length && !lines[lines.length - 1]) lines.pop();
+      const pageCount = Math.max(1, Math.ceil(lines.length / 19));
+      const textureCount = Math.max(2, Math.ceil(pageCount / 2) * 2);
+      const textures = Array.from({ length: textureCount }, (_, pageIndex) => {
         const canvas = document.createElement("canvas"); canvas.width = 768; canvas.height = 1152;
         const ctx = canvas.getContext("2d"); ctx.fillStyle = "#f2eee8"; ctx.fillRect(0, 0, 768, 1152);
-        ctx.fillStyle = "#574e63"; ctx.font = '22px sans-serif'; ctx.fillText("PROFUNFIS  /  笔记", 72, 76);
-        ctx.textAlign = "right"; ctx.fillText(String(pageIndex + 1).padStart(2,"0"), 696, 76); ctx.textAlign = "left";
-        ctx.fillStyle = "#302a38"; ctx.fillRect(72, 96, 624, 1);
-        const text = chars.slice(pageIndex * size, (pageIndex + 1) * size).join("");
-        ctx.font = '30px "Microsoft YaHei", "PingFang SC", sans-serif';
-        let line = "", y = 165;
-        for (const c of text) {
-          if (c === "\n") { if (line) { ctx.fillText(line, 72, y); y += 48; line = ""; } else y += 22; continue; }
-          if (ctx.measureText(line + c).width > 624) { ctx.fillText(line, 72, y); y += 48; line = c; } else line += c;
+        if (pageIndex < pageCount) {
+          ctx.fillStyle = "#574e63"; ctx.font = '22px sans-serif'; ctx.fillText("PROFUNFIS  /  笔记", 72, 76);
+          ctx.textAlign = "right"; ctx.fillText(String(pageIndex + 1).padStart(2,"0"), 696, 76); ctx.textAlign = "left";
+          ctx.fillStyle = "#302a38"; ctx.fillRect(72, 96, 624, 1);
+          ctx.font = '30px "Microsoft YaHei", "PingFang SC", sans-serif';
+          lines.slice(pageIndex * 19, (pageIndex + 1) * 19).forEach((line, i) => ctx.fillText(line, 72, 165 + i * 48));
         }
-        if (line) ctx.fillText(line, 72, y);
-        const texture = configureCanvasTexture(new THREE.CanvasTexture(canvas), { anisotropy: 16 });
-        return texture;
+        return configureCanvasTexture(new THREE.CanvasTexture(canvas), { anisotropy: 16 });
       });
+      textures.pageCount = pageCount;
+      return textures;
     }
 
     function makeContactShadowTexture() {
@@ -3545,12 +3553,12 @@
 
       const pagePivots = [];
       const pageSurfaces = [];
-      for (let pageIndex = 0; pageIndex < 6; pageIndex += 1) {
-        const leafOrder = 5 - pageIndex;
-        const frontPageMaterial = leafOrder < 4
+      for (let pageIndex = 0; pageIndex < interiorPageTextures.length / 2 + 2; pageIndex += 1) {
+        const leafOrder = interiorPageTextures.length / 2 + 1 - pageIndex;
+        const frontPageMaterial = leafOrder < interiorPageTextures.length / 2
           ? interiorPageMaterials[leafOrder * 2]
           : blankPageMaterial;
-        const backPageMaterial = leafOrder < 4
+        const backPageMaterial = leafOrder < interiorPageTextures.length / 2
           ? interiorPageMaterials[leafOrder * 2 + 1]
           : blankPageMaterial;
         const pagePivot = new THREE.Group();
@@ -3804,6 +3812,8 @@
         clothSurfaceMaps,
         paperFaceTexture,
         interiorPageTextures,
+        pageCount: interiorPageTextures.pageCount,
+        leafCount: interiorPageTextures.length / 2,
         endpaperTexture,
         pageEdgeTextures,
         spineTexture,
@@ -4236,21 +4246,23 @@
     }
 
     function getSpreadLabels(book) {
-      return ["第 1 页", "第 2–3 页", "第 4–5 页", "第 6–7 页", "第 8 页"];
+      const count = activeBook?.pageCount || 1;
+      return Array.from({length: Math.ceil((count - 1) / 2) + 1}, (_, i) => i === 0 ? "第 1 页" : (i * 2 < count ? `第 ${i * 2}–${i * 2 + 1} 页` : `第 ${i * 2} 页`));
     }
 
     function updatePageControls(announce = false) {
       const book = activeBook?.data || BOOKS[selectedIndex];
       const labels = getSpreadLabels(book);
+      const spreadCount = labels.length;
       const interactionLocked = mode !== "detail" || !readingOpen;
       const previousDisabled = interactionLocked || currentSpread === 0;
-      const nextDisabled = interactionLocked || currentSpread === SPREAD_COUNT - 1;
+      const nextDisabled = interactionLocked || currentSpread === spreadCount - 1;
 
       previousPageButton.disabled = previousDisabled;
       nextPageButton.disabled = nextDisabled;
       pageLabel.textContent = readingOpen ? labels[currentSpread] : "未打开";
       pageCounter.textContent = readingOpen
-        ? `${pad(currentSpread + 1)} / ${pad(SPREAD_COUNT)}`
+        ? `${pad(currentSpread + 1)} / ${pad(spreadCount)}`
         : "点击打开书";
       toggleBookButton.textContent = readingOpen ? "合上书" : "打开书";
       toggleBookButton.setAttribute("aria-pressed", String(readingOpen));
@@ -4271,7 +4283,7 @@
       );
 
       if (announce && activeBook && readingOpen) {
-        liveRegion.textContent = `Page ${currentSpread + 1} of ${SPREAD_COUNT}: ${labels[currentSpread]}.`;
+        liveRegion.textContent = `Page ${currentSpread + 1} of ${spreadCount}: ${labels[currentSpread]}.`;
       }
     }
 
@@ -4297,7 +4309,7 @@
       const nextSpread = clamp(
         currentSpread + direction,
         0,
-        SPREAD_COUNT - 1
+        getSpreadLabels(activeBook?.data).length - 1
       );
       if (nextSpread === currentSpread) return;
       currentSpread = nextSpread;
@@ -4440,7 +4452,7 @@
         let dragCurveBoost = 0;
         let flexTwistTarget = 0;
 
-        if (leafOrder < PAGINATED_LEAF_COUNT) {
+        if (leafOrder < rig.leafCount) {
           const isTurned = leafOrder < currentSpread;
           const unturnedTarget = -0.038 + leafOrder * 0.008;
           const turnedTarget = -Math.PI + 0.085 + leafOrder * 0.014;
@@ -4494,7 +4506,7 @@
             delta
           );
         } else {
-          pageTarget = -0.006 + (leafOrder - PAGINATED_LEAF_COUNT) * 0.003;
+          pageTarget = -0.006 + (leafOrder - rig.leafCount) * 0.003;
           pagePivot.position.z = damp(
             pagePivot.position.z,
             pagePivot.userData.restZ,
@@ -4919,7 +4931,7 @@
         if (pageDrag.direction === 0 && horizontalDistance >= 6) {
           const direction = deltaX < 0 ? 1 : -1;
           const directionAvailable = direction > 0
-            ? currentSpread < SPREAD_COUNT - 1
+            ? currentSpread < getSpreadLabels(activeBook?.data).length - 1
             : currentSpread > 0;
           pageDrag.direction = directionAvailable ? direction : 0;
         }
@@ -5794,3 +5806,4 @@
   </script>
 </body>
 </html>
+
