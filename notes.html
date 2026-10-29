@@ -1595,12 +1595,20 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+        "three": "./assets/vendor/three/build/three.module.js",
+        "three/addons/": "./assets/vendor/three/examples/jsm/"
       }
     }
   </script>
-<style>.experience:not(.webgl-ready) #browse-ui{visibility:hidden}.editorial-header a {text-decoration:none;pointer-events:auto}.detail-deck {line-height:1.75}.detail-title {font-family:system-ui,sans-serif}.static-fallback a {color:#ede9f8}.fallback-book {display:block;text-decoration:none;padding:20px;min-height:100px;background:#29243e}</style><script>if(new URLSearchParams(location.search).has('embedded'))document.documentElement.classList.add('embedded-shelf');</script><style>.embedded-shelf .editorial-index a,.embedded-shelf .static-fallback > p:last-child{display:none}</style></head>
+<style>.experience:not(.webgl-ready) #browse-ui{visibility:hidden}.editorial-header a {text-decoration:none;pointer-events:auto}.detail-deck {line-height:1.75}.detail-title {font-family:system-ui,sans-serif}.static-fallback a {color:#ede9f8}.fallback-book {display:block;text-decoration:none;padding:20px;min-height:100px;background:#29243e}</style><script>if(new URLSearchParams(location.search).has('embedded'))document.documentElement.classList.add('embedded-shelf');</script><style>.embedded-shelf .editorial-index a,.embedded-shelf .static-fallback > p:last-child{display:none}</style><style>
+.detail-title{font-size:clamp(2.4rem,4.5vw,4.6rem);line-height:1.12;letter-spacing:-.035em;overflow-wrap:anywhere}
+.detail-deck{line-height:1.8;color:var(--ink)}
+.detail-panel{padding:clamp(22px,3vw,40px);border:1px solid rgba(203,192,255,.18);border-radius:18px;background:rgba(18,15,32,.88);box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.page-button{width:44px;height:44px;border-color:rgba(209,197,255,.45)}
+.page-navigation{grid-template-columns:44px minmax(0,1fr) 44px}
+.detail-buttons .reset-button{background:transparent;color:#ede9f8;min-height:44px;padding:0 4px}.detail-buttons .reset-button:hover{color:#d4c5ff;background:transparent}.close-button{top:12px;right:12px}#plain-reader{display:inline-block;margin-top:18px;padding:8px 0;border-bottom:1px solid rgba(201,189,255,.55);line-height:1.5}
+@media(max-width:819px){.detail-panel{border-radius:16px;padding:20px}.detail-title{font-size:clamp(1.8rem,7vw,2.8rem)}.detail-deck{font-size:1rem;line-height:1.7}}
+</style></head>
 <body>
   <main class="experience" id="experience">
     <div class="scene-shell">
@@ -1709,7 +1717,7 @@
 
     <section class="static-fallback" id="static-fallback"><div class="fallback__header"><div><h2>笔记</h2><p id="fallback-status">3D 书架暂时不可用，请使用下方链接阅读。</p></div></div><div class="fallback__grid" id="fallback-list"><a class="fallback-book" target="_top" href="note.html?n=1">一颗点该站在哪里</a><a class="fallback-book" target="_top" href="note.html?n=2">十二块板为什么不能平铺</a><a class="fallback-book" target="_top" href="note.html?n=3">删到只剩文字</a><a class="fallback-book" target="_top" href="note.html?n=4">图片一进来，排版就变了</a><a class="fallback-book" target="_top" href="note.html?n=5">六个封面，六种颜色</a><a class="fallback-book" target="_top" href="note.html?n=6">截不到的那一帧</a><a class="fallback-book" target="_top" href="note.html?n=7">详情页该有的只有三样</a></div><p><a href="index.html">返回首页</a></p></section>
 
-    <div class="loading" id="loading" aria-live="polite">
+    <script>setTimeout(function(){var e=document.getElementById("experience");if(e && !e.classList.contains("webgl-ready")){var l=document.getElementById("loading");if(l)l.hidden=true;var f=document.getElementById("static-fallback");if(f)f.hidden=false;}},8000);</script><div class="loading" id="loading" aria-live="polite">
       <div class="loading__inner">
         <div class="loading__mark" aria-hidden="true"></div>
         <p>Binding the collection</p>
@@ -5489,7 +5497,7 @@
       viewHeight = window.innerHeight;
       configureResponsiveTargets();
       renderer.setSize(viewWidth, viewHeight, false);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, viewWidth < 820 ? 1.5 : 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, viewWidth < 820 ? 1.25 : 1.75));
       camera.aspect = viewWidth / viewHeight;
       camera.updateProjectionMatrix();
 
@@ -5695,7 +5703,7 @@
       try {
         renderer = new THREE.WebGLRenderer({
           canvas,
-          antialias: true,
+          antialias: window.innerWidth >= 820,
           alpha: true,
           powerPreference: "high-performance"
         });
